@@ -4,3 +4,4 @@ env/
 .venv/
 ENV/
 data/raw/
+data/processed/
