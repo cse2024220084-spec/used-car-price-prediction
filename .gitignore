@@ -5,3 +5,5 @@ env/
 ENV/
 data/raw/
 data/processed/
+
+src/__pycache__/
