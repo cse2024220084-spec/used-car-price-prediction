@@ -449,6 +449,11 @@
 
 <script>
   const el = (id) => document.getElementById(id);
+  const API_BASE_URLS = [
+    window.location.protocol === "http:" || window.location.protocol === "https:" ? window.location.origin : null,
+    "http://127.0.0.1:8000",
+    "http://localhost:8000"
+  ].filter(Boolean);
 
   const BASE_PRICE = {
     Toyota: 17000, Honda: 16500, Ford: 15000, BMW: 24000, Hyundai: 14000
@@ -458,6 +463,15 @@
   };
   const FUEL_ADJ = { Petrol: 0, Diesel: 400, Hybrid: 1200, Electric: 2500 };
   const TRANS_ADJ = { Automatic: 500, Manual: -300 };
+  const HORSEPOWER_LOOKUP = {
+    Toyota: { Camry: 203 },
+    Honda: { Civic: 158 },
+    Ford: { Focus: 160 },
+    BMW: { "3 Series": 255 },
+    Hyundai: { Elantra: 147 }
+  };
+
+  let latestPrediction = null;
 
   function formatUSD(n) {
     return "$" + Math.round(n).toLocaleString("en-US");
@@ -496,8 +510,11 @@
 
   function render() {
     const { total, contributions } = computeMock();
-    el("priceValue").textContent = formatUSD(total);
-    el("priceRange").textContent = `±${formatUSD(total * 0.09).replace("$","")} · preview range`;
+    const displayedTotal = latestPrediction?.price ?? total;
+    el("priceValue").textContent = formatUSD(displayedTotal);
+    el("priceRange").textContent = latestPrediction
+      ? `Live model prediction · ${latestPrediction.modelUsed}`
+      : `±${formatUSD(total * 0.09).replace("$","")} · preview range`;
 
     const maxAbs = Math.max(...contributions.map(c => Math.abs(c.value)), 1);
     const list = el("contribList");
@@ -517,12 +534,16 @@
   }
 
   el("mileage").addEventListener("input", (e) => {
+    latestPrediction = null;
     el("mileageValue").textContent = parseInt(e.target.value, 10).toLocaleString("en-US") + " mi";
     render();
   });
 
   ["make","model","year","fuel","transmission"].forEach(id => {
-    el(id).addEventListener("input", render);
+    el(id).addEventListener("input", () => {
+      latestPrediction = null;
+      render();
+    });
   });
 
   function showError(msg) {
@@ -544,6 +565,52 @@
     el("successMsg").classList.remove("show");
   }
 
+  function buildPayload() {
+    const make = el("make").value;
+    const model = el("model").value;
+
+    return {
+      make,
+      model,
+      year: parseInt(el("year").value, 10),
+      mileage: parseInt(el("mileage").value, 10),
+      fuel_type: el("fuel").value,
+      transmission: el("transmission").value,
+      horsepower: HORSEPOWER_LOOKUP[make]?.[model] ?? 150,
+      number_of_seats: 5,
+      number_of_doors: 4,
+      location: "Dubai",
+      car_type: "Sedan",
+      color: "White",
+      sale_status: "Used"
+    };
+  }
+
+  async function postPrediction(payload) {
+    let lastError = null;
+
+    for (const baseUrl of API_BASE_URLS) {
+      try {
+        const response = await fetch(`${baseUrl}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          lastError = new Error(`API error: ${response.statusText}`);
+          continue;
+        }
+
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("Unable to reach the prediction API.");
+  }
+
   async function predictWithAPI() {
     const btn = el("predictBtn");
     const originalText = btn.textContent;
@@ -559,30 +626,23 @@
       btn.disabled = true;
       btn.textContent = "Loading...";
 
-      const payload = {
-        make: el("make").value,
-        model: el("model").value,
-        year: year,
-        mileage: parseInt(el("mileage").value, 10),
-        fuel: el("fuel").value,
-        transmission: el("transmission").value
-      };
+      const data = await postPrediction(buildPayload());
+      const predictedPrice = data.predicted_price ?? data.prediction;
 
-      const response = await fetch("/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+      if (typeof predictedPrice !== "number") {
+        throw new Error("API response did not include a numeric prediction");
       }
 
-      const data = await response.json();
-      showSuccess(`✓ Prediction received from API: ${formatUSD(data.prediction)}`);
+      latestPrediction = {
+        price: predictedPrice,
+        modelUsed: data.model_used || "trained model"
+      };
+
+      showSuccess(`✓ Prediction received from API: ${formatUSD(predictedPrice)} (${latestPrediction.modelUsed})`);
       render();
     } catch (err) {
       console.error(err);
+      latestPrediction = null;
       showError(`Failed to fetch prediction: ${err.message}. Falling back to mock prediction.`);
       render();
     } finally {
