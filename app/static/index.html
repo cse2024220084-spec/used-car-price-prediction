@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Used Car Price Prediction — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12161d;
+    --surface: #1a1f28;
+    --surface-raised: #202632;
+    --border: #2a3140;
+    --text: #e7eaf0;
+    --text-dim: #8b93a3;
+    --teal: #2dd4bf;
+    --amber: #f5a623;
+    --amber-dim: #8a5f1e;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(245,166,35,0.05), transparent 40%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    max-width: 560px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .notice {
+    margin-top: 18px;
+    background: rgba(245,166,35,0.08);
+    border: 1px solid var(--amber-dim);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e8c98a;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .notice svg { flex-shrink: 0; margin-top: 1px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    margin-top: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+
+  .panel-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-label .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--teal);
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .field .hint {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-top: 5px;
+  }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  select, input[type="number"], input[type="range"] {
+    width: 100%;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  select:focus, input[type="number"]:focus {
+    border-color: var(--teal);
+  }
+
+  select:focus-visible, input[type="number"]:focus-visible, button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  .mileage-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  input[type="range"] {
+    accent-color: var(--teal);
+    padding: 0;
+    height: 6px;
+  }
+
+  .mileage-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    min-width: 78px;
+    text-align: right;
+  }
+
+  button.predict-btn {
+    margin-top: 22px;
+    width: 100%;
+    background: var(--teal);
+    color: #0b1410;
+    border: none;
+    border-radius: 7px;
+    padding: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+
+  button.predict-btn:hover { filter: brightness(1.08); }
+  button.predict-btn:active { transform: scale(0.995); }
+
+  button.predict-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+    color: #e05a5a;
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(224, 90, 90, 0.1);
+    border: 1px solid rgba(224, 90, 90, 0.3);
+    border-radius: 6px;
+    display: none;
+  }
+
+  .error-message.show { display: block; }
+
+  .success-message {
+    color: #2dd4bf;
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: 6px;
+    display: none;
+  }
+
+  .success-message.show { display: block; }
+
+  /* ---- Ticket / result panel ---- */
+
+  .ticket {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .ticket-top {
+    padding: 22px 22px 18px;
+    border-bottom: 1px dashed var(--border);
+    position: relative;
+  }
+
+  .ticket-top::before, .ticket-top::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    width: 18px; height: 18px;
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .ticket-top::before { left: -9px; }
+  .ticket-top::after { right: -9px; }
+
+  .price-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .price-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .price-range {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 10px;
+  }
+
+  .ticket-body { padding: 18px 22px 22px; }
+
+  .contrib-title {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .contrib-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 9px;
+  }
+
+  .contrib-name { width: 92px; color: var(--text-dim); flex-shrink: 0; }
+
+  .contrib-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-raised);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .contrib-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .contrib-bar.pos { background: var(--teal); }
+  .contrib-bar.neg { background: #e05a5a; }
+
+  .contrib-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    width: 58px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .footnote {
+    margin-top: 30px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .footnote code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface-raised);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--teal);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Used Car Price Prediction</div>
+    <h1>Prediction Preview</h1>
+    <p>A working preview of what the FastAPI + Swagger UI experience will feel like once a real model is trained and saved with joblib.</p>
+    <div class="notice">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2" style="margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>This is a visual mockup only. The price below comes from a simple placeholder formula running in your browser — not your trained XGBoost/Random Forest/Linear/SVR model. Swap in a real <code>fetch()</code> call to <code>/predict</code> once your FastAPI backend is running.</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="predictionForm">
+      <div class="panel-label"><span class="dot"></span>Car details</div>
+
+      <div class="field">
+        <div class="row-2">
+          <div>
+            <label for="make">Make</label>
+            <select id="make">
+              <option value="Toyota">Toyota</option>
+              <option value="Honda">Honda</option>
+              <option value="Ford">Ford</option>
+              <option value="BMW">BMW</option>
+              <option value="Hyundai">Hyundai</option>
+            </select>
+          </div>
+          <div>
+            <label for="model">Model</label>
+            <select id="model">
+              <option value="Camry">Camry</option>
+              <option value="Civic">Civic</option>
+              <option value="Focus">Focus</option>
+              <option value="3 Series">3 Series</option>
+              <option value="Elantra">Elantra</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="row-2">
+          <div>
+            <label for="year">Year</label>
+            <input type="number" id="year" value="2019" min="1990" max="2026">
+          </div>
+          <div>
+            <label for="fuel">Fuel type</label>
+            <select id="fuel">
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Electric">Electric</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mileage">Mileage</label>
+        <div class="mileage-row">
+          <input type="range" id="mileage" min="0" max="200000" step="1000" value="45000">
+          <span class="mileage-value" id="mileageValue">45,000 mi</span>
+        </div>
+        <div class="hint">Higher mileage pulls the estimate down — this is the strongest depreciation signal in most used-car datasets.</div>
+      </div>
+
+      <div class="field">
+        <label for="transmission">Transmission</label>
+        <select id="transmission">
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
+      </div>
+
+      <button type="button" class="predict-btn" id="predictBtn">Predict price</button>
+      <div class="error-message" id="errorMsg"></div>
+      <div class="success-message" id="successMsg"></div>
+    </form>
+
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="price-label">Estimated resale price</div>
+        <div class="price-value" id="priceValue">$18,240</div>
+        <div class="price-range" id="priceRange">±$1,900 · preview range</div>
+      </div>
+      <div class="ticket-body">
+        <div class="contrib-title">What moved the estimate</div>
+        <div id="contribList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Backend target: <code>POST /predict</code> on your FastAPI app · Swagger UI at <code>/docs</code> once <code>uvicorn app.main:app --reload</code> is running.
+  </div>
+</div>
+
+<script>
+  const el = (id) => document.getElementById(id);
+
+  const BASE_PRICE = {
+    Toyota: 17000, Honda: 16500, Ford: 15000, BMW: 24000, Hyundai: 14000
+  };
+  const MODEL_ADJ = {
+    Camry: 800, Civic: 400, Focus: -600, "3 Series": 3200, Elantra: -200
+  };
+  const FUEL_ADJ = { Petrol: 0, Diesel: 400, Hybrid: 1200, Electric: 2500 };
+  const TRANS_ADJ = { Automatic: 500, Manual: -300 };
+
+  function formatUSD(n) {
+    return "$" + Math.round(n).toLocaleString("en-US");
+  }
+
+  function computeMock() {
+    const make = el("make").value;
+    const model = el("model").value;
+    const year = parseInt(el("year").value, 10) || 2019;
+    const mileage = parseInt(el("mileage").value, 10);
+    const fuel = el("fuel").value;
+    const trans = el("transmission").value;
+
+    const base = BASE_PRICE[make] ?? 15000;
+    const modelAdj = MODEL_ADJ[model] ?? 0;
+    const age = Math.max(0, 2026 - year);
+    const ageAdj = -age * 650;
+    const mileageAdj = -(mileage / 1000) * 55;
+    const fuelAdj = FUEL_ADJ[fuel] ?? 0;
+    const transAdj = TRANS_ADJ[trans] ?? 0;
+
+    const total = Math.max(1500, base + modelAdj + ageAdj + mileageAdj + fuelAdj + transAdj);
+
+    return {
+      total,
+      contributions: [
+        { name: "Base (make)", value: base, isBase: true },
+        { name: "Model", value: modelAdj },
+        { name: "Age", value: ageAdj },
+        { name: "Mileage", value: mileageAdj },
+        { name: "Fuel type", value: fuelAdj },
+        { name: "Transmission", value: transAdj },
+      ]
+    };
+  }
+
+  function render() {
+    const { total, contributions } = computeMock();
+    el("priceValue").textContent = formatUSD(total);
+    el("priceRange").textContent = `±${formatUSD(total * 0.09).replace("$","")} · preview range`;
+
+    const maxAbs = Math.max(...contributions.map(c => Math.abs(c.value)), 1);
+    const list = el("contribList");
+    list.innerHTML = "";
+    contributions.forEach(c => {
+      const pct = Math.min(100, (Math.abs(c.value) / maxAbs) * 100);
+      const cls = c.isBase ? "pos" : (c.value >= 0 ? "pos" : "neg");
+      const row = document.createElement("div");
+      row.className = "contrib-row";
+      row.innerHTML = `
+        <div class="contrib-name">${c.name}</div>
+        <div class="contrib-bar-track"><div class="contrib-bar ${cls}" style="width:${pct}%"></div></div>
+        <div class="contrib-val">${c.value >= 0 ? "+" : ""}${formatUSD(c.value)}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  el("mileage").addEventListener("input", (e) => {
+    el("mileageValue").textContent = parseInt(e.target.value, 10).toLocaleString("en-US") + " mi";
+    render();
+  });
+
+  ["make","model","year","fuel","transmission"].forEach(id => {
+    el(id).addEventListener("input", render);
+  });
+
+  function showError(msg) {
+    const errorEl = el("errorMsg");
+    errorEl.textContent = msg;
+    errorEl.classList.add("show");
+    el("successMsg").classList.remove("show");
+  }
+
+  function showSuccess(msg) {
+    const successEl = el("successMsg");
+    successEl.textContent = msg;
+    successEl.classList.add("show");
+    el("errorMsg").classList.remove("show");
+  }
+
+  function clearMessages() {
+    el("errorMsg").classList.remove("show");
+    el("successMsg").classList.remove("show");
+  }
+
+  async function predictWithAPI() {
+    const btn = el("predictBtn");
+    const originalText = btn.textContent;
+
+    try {
+      const year = parseInt(el("year").value, 10);
+      if (year < 1990 || year > 2026) {
+        showError("Year must be between 1990 and 2026");
+        return;
+      }
+
+      clearMessages();
+      btn.disabled = true;
+      btn.textContent = "Loading...";
+
+      const payload = {
+        make: el("make").value,
+        model: el("model").value,
+        year: year,
+        mileage: parseInt(el("mileage").value, 10),
+        fuel: el("fuel").value,
+        transmission: el("transmission").value
+      };
+
+      const response = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      showSuccess(`✓ Prediction received from API: ${formatUSD(data.prediction)}`);
+      render();
+    } catch (err) {
+      console.error(err);
+      showError(`Failed to fetch prediction: ${err.message}. Falling back to mock prediction.`);
+      render();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
+  el("predictBtn").addEventListener("click", predictWithAPI);
+
+  render();
+</script>
+</body>
+</html>
