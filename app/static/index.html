@@ -81,7 +81,7 @@
     align-items: flex-start;
   }
 
-  .notice svg { flex-shrink: 0; margin-top: 1px; }
+  .notice svg { flex-shrink: 0; margin-top: 2px; }
 
   .grid {
     display: grid;
@@ -355,8 +355,8 @@
     <h1>Prediction Preview</h1>
     <p>A working preview of what the FastAPI + Swagger UI experience will feel like once a real model is trained and saved with joblib.</p>
     <div class="notice">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2" style="margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>This is a visual mockup only. The price below comes from a simple placeholder formula running in your browser — not your trained XGBoost/Random Forest/Linear/SVR model. Swap in a real <code>fetch()</code> call to <code>/predict</code> once your FastAPI backend is running.</div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>This is a visual mockup. Click <strong>"Predict price"</strong> to calculate or fetch the latest price estimation. Changing input values will not update the price automatically until you click the button.</div>
     </div>
   </header>
 
@@ -370,20 +370,22 @@
             <label for="make">Make</label>
             <select id="make">
               <option value="Toyota">Toyota</option>
+              <option value="Hyundai">Hyundai</option>
+              <option value="Maruti">Maruti</option>
+              <option value="Mahindra">Mahindra</option>
+              <option value="Kia">Kia</option>
+              <option value="Tata">Tata</option>
+              <option value="Renault">Renault</option>
+              <option value="Prazo">Prazo</option>
+              <option value="BMW">BMW</option>
               <option value="Honda">Honda</option>
               <option value="Ford">Ford</option>
-              <option value="BMW">BMW</option>
-              <option value="Hyundai">Hyundai</option>
             </select>
           </div>
           <div>
             <label for="model">Model</label>
             <select id="model">
-              <option value="Camry">Camry</option>
-              <option value="Civic">Civic</option>
-              <option value="Focus">Focus</option>
-              <option value="3 Series">3 Series</option>
-              <option value="Elantra">Elantra</option>
+              <!-- Dynamically populated based on Make -->
             </select>
           </div>
         </div>
@@ -393,14 +395,14 @@
         <div class="row-2">
           <div>
             <label for="year">Year</label>
-            <input type="number" id="year" value="2019" min="1990" max="2026">
+            <input type="number" id="year" value="2021" min="1990" max="2026">
           </div>
           <div>
             <label for="fuel">Fuel type</label>
             <select id="fuel">
+              <option value="Hybrid">Hybrid</option>
               <option value="Petrol">Petrol</option>
               <option value="Diesel">Diesel</option>
-              <option value="Hybrid">Hybrid</option>
               <option value="Electric">Electric</option>
             </select>
           </div>
@@ -408,10 +410,10 @@
       </div>
 
       <div class="field">
-        <label for="mileage">Mileage</label>
+        <label for="mileage">Mileage (KM)</label>
         <div class="mileage-row">
           <input type="range" id="mileage" min="0" max="200000" step="1000" value="45000">
-          <span class="mileage-value" id="mileageValue">45,000 mi</span>
+          <span class="mileage-value" id="mileageValue">45,000 km</span>
         </div>
         <div class="hint">Higher mileage pulls the estimate down — this is the strongest depreciation signal in most used-car datasets.</div>
       </div>
@@ -433,7 +435,7 @@
       <div class="ticket-top">
         <div class="price-label">Estimated resale price</div>
         <div class="price-value" id="priceValue">$18,240</div>
-        <div class="price-range" id="priceRange">±$1,900 · preview range</div>
+        <div class="price-range" id="priceRange">Click "Predict price" to compute</div>
       </div>
       <div class="ticket-body">
         <div class="contrib-title">What moved the estimate</div>
@@ -455,20 +457,51 @@
     "http://localhost:8000"
   ].filter(Boolean);
 
+  // Dynamic Brand -> Models mapping
+  const BRAND_MODELS = {
+    Toyota: ["Fortuner", "Hilux", "Camry"],
+    Hyundai: ["Creta", "i20", "Elantra"],
+    Maruti: ["Dzire", "Etriga", "Swift"],
+    Mahindra: ["Scorpio", "Thar"],
+    Kia: ["Seltos"],
+    Tata: ["Yodha"],
+    Renault: ["Kags"],
+    Prazo: ["Plato"],
+    BMW: ["3 Series"],
+    Honda: ["Civic"],
+    Ford: ["Focus"]
+  };
+
   const BASE_PRICE = {
-    Toyota: 17000, Honda: 16500, Ford: 15000, BMW: 24000, Hyundai: 14000
+    Toyota: 17000, Hyundai: 14000, Maruti: 11000, Mahindra: 13500,
+    Kia: 14500, Tata: 10500, Renault: 10000, Prazo: 12000,
+    BMW: 24000, Honda: 16500, Ford: 15000
   };
+
   const MODEL_ADJ = {
-    Camry: 800, Civic: 400, Focus: -600, "3 Series": 3200, Elantra: -200
+    Fortuner: 2500, Hilux: 2000, Camry: 800,
+    Creta: 900, i20: 300, Elantra: -200,
+    Dzire: 100, Etriga: 300, Swift: 200,
+    Scorpio: 1200, Thar: 1500, Seltos: 800,
+    Yodha: 400, Kags: 300, Plato: 500,
+    "3 Series": 3200, Civic: 400, Focus: -600
   };
+
   const FUEL_ADJ = { Petrol: 0, Diesel: 400, Hybrid: 1200, Electric: 2500 };
   const TRANS_ADJ = { Automatic: 500, Manual: -300 };
+
   const HORSEPOWER_LOOKUP = {
-    Toyota: { Camry: 203 },
-    Honda: { Civic: 158 },
-    Ford: { Focus: 160 },
+    Toyota: { Fortuner: 200, Hilux: 204, Camry: 203 },
+    Hyundai: { Creta: 113, i20: 100, Elantra: 147 },
+    Maruti: { Dzire: 100, Etriga: 103, Swift: 100 },
+    Mahindra: { Scorpio: 120, Thar: 130 },
+    Kia: { Seltos: 115 },
+    Tata: { Yodha: 175 },
+    Renault: { Kags: 150 },
+    Prazo: { Plato: 250 },
     BMW: { "3 Series": 255 },
-    Hyundai: { Elantra: 147 }
+    Honda: { Civic: 158 },
+    Ford: { Focus: 160 }
   };
 
   let latestPrediction = null;
@@ -477,10 +510,25 @@
     return "$" + Math.round(n).toLocaleString("en-US");
   }
 
+  // Update dynamic model dropdown options based on selected Make
+  function updateModelDropdown() {
+    const make = el("make").value;
+    const modelSelect = el("model");
+    const availableModels = BRAND_MODELS[make] || ["Default"];
+
+    modelSelect.innerHTML = "";
+    availableModels.forEach(mod => {
+      const opt = document.createElement("option");
+      opt.value = mod;
+      opt.textContent = mod;
+      modelSelect.appendChild(opt);
+    });
+  }
+
   function computeMock() {
     const make = el("make").value;
     const model = el("model").value;
-    const year = parseInt(el("year").value, 10) || 2019;
+    const year = parseInt(el("year").value, 10) || 2021;
     const mileage = parseInt(el("mileage").value, 10);
     const fuel = el("fuel").value;
     const trans = el("transmission").value;
@@ -533,17 +581,16 @@
     });
   }
 
+  // --- EVENT LISTENERS ---
+
+  // Update slider display label ONLY (do NOT re-render price automatically)
   el("mileage").addEventListener("input", (e) => {
-    latestPrediction = null;
-    el("mileageValue").textContent = parseInt(e.target.value, 10).toLocaleString("en-US") + " mi";
-    render();
+    el("mileageValue").textContent = parseInt(e.target.value, 10).toLocaleString("en-US") + " km";
   });
 
-  ["make","model","year","fuel","transmission"].forEach(id => {
-    el(id).addEventListener("input", () => {
-      latestPrediction = null;
-      render();
-    });
+  // Update model choices dynamic dropdown when Make changes (do NOT re-render price automatically)
+  el("make").addEventListener("change", () => {
+    updateModelDropdown();
   });
 
   function showError(msg) {
@@ -579,9 +626,9 @@
       horsepower: HORSEPOWER_LOOKUP[make]?.[model] ?? 150,
       number_of_seats: 5,
       number_of_doors: 4,
-      location: "Dubai",
-      car_type: "Sedan",
-      color: "White",
+      location: "California",
+      car_type: "SUV",
+      color: "Gray",
       sale_status: "Used"
     };
   }
@@ -643,7 +690,7 @@
     } catch (err) {
       console.error(err);
       latestPrediction = null;
-      showError(`Failed to fetch prediction: ${err.message}. Falling back to mock prediction.`);
+      showError(`Failed to fetch prediction: ${err.message}. Displaying formula prediction.`);
       render();
     } finally {
       btn.disabled = false;
@@ -651,8 +698,11 @@
     }
   }
 
+  // Bind Prediction calculation ONLY to button click
   el("predictBtn").addEventListener("click", predictWithAPI);
 
+  // Initialize dropdown options and perform initial calculation on page load
+  updateModelDropdown();
   render();
 </script>
 </body>

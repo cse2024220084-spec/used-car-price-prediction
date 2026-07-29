@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -31,11 +33,35 @@ def save_metrics(metrics: dict, file_path: str  = "../reports/model_metrics.csv"
     return df_all
 
 
-def load_all_matrics(file_path: str = "../reports/model_metrics.csv") -> pd.DataFrame:
-    """Load all metrics from the CSV file."""
+def load_all_metrics(file_path: str = "../reports/model_metrics.csv") -> pd.DataFrame:
+    """Load all metrics and normalize column names for analysis notebooks."""
+    project_root = Path(__file__).resolve().parents[1]
+    default_path = project_root / "reports" / "model_metrics.csv"
+
+    if file_path is None:
+        resolved_path = default_path
+    else:
+        path = Path(file_path)
+        resolved_path = path if path.is_absolute() else (project_root / path)
+
     try:
-        df = pd.read_csv(file_path)
-        return df
+        df = pd.read_csv(resolved_path)
     except FileNotFoundError:
-        print(f"No metrics file found at {file_path}.")
-        return pd.read_csv(file_path, index_col=0)  # Return an empty DataFrame if the file doesn't exist
+        print(f"No metrics file found at {resolved_path}.")
+        return pd.DataFrame(columns=["model", "MSE", "RMSE", "MAE", "R2"])
+
+    rename_map = {}
+    if "model_name" in df.columns:
+        rename_map["model_name"] = "model"
+    if "model" in df.columns:
+        rename_map["model"] = "model"
+    if "mse" in df.columns:
+        rename_map["mse"] = "MSE"
+    if "rmse" in df.columns:
+        rename_map["rmse"] = "RMSE"
+    if "mae" in df.columns:
+        rename_map["mae"] = "MAE"
+    if "r2" in df.columns:
+        rename_map["r2"] = "R2"
+
+    return df.rename(columns=rename_map)
