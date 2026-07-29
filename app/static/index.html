@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Used Car Price Prediction — Preview</title>
+<title>Used Car Price Prediction — Interactive Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -39,9 +39,7 @@
     margin: 0 auto;
   }
 
-  header {
-    margin-bottom: 28px;
-  }
+  header { margin-bottom: 28px; }
 
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -120,7 +118,6 @@
   }
 
   .field { margin-bottom: 16px; }
-  .field:last-child { margin-bottom: 0; }
 
   .field label {
     display: block;
@@ -142,7 +139,7 @@
     gap: 14px;
   }
 
-  select, input[type="number"], input[type="range"] {
+  select, input[type="number"] {
     width: 100%;
     background: var(--surface-raised);
     border: 1px solid var(--border);
@@ -155,33 +152,10 @@
     transition: border-color 0.15s ease;
   }
 
-  select:focus, input[type="number"]:focus {
-    border-color: var(--teal);
-  }
-
+  select:focus, input[type="number"]:focus { border-color: var(--teal); }
   select:focus-visible, input[type="number"]:focus-visible, button:focus-visible {
     outline: 2px solid var(--teal);
     outline-offset: 2px;
-  }
-
-  .mileage-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  input[type="range"] {
-    accent-color: var(--teal);
-    padding: 0;
-    height: 6px;
-  }
-
-  .mileage-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--teal);
-    min-width: 78px;
-    text-align: right;
   }
 
   button.predict-btn {
@@ -201,39 +175,30 @@
 
   button.predict-btn:hover { filter: brightness(1.08); }
   button.predict-btn:active { transform: scale(0.995); }
+  button.predict-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  button.predict-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .status-banner {
+    font-size: 12px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    display: none;
+    line-height: 1.4;
   }
 
-  .error-message {
-    color: #e05a5a;
-    font-size: 12px;
-    margin-top: 8px;
-    padding: 8px;
-    background: rgba(224, 90, 90, 0.1);
+  .status-banner.error {
+    display: block;
+    color: #f87171;
+    background: rgba(224, 90, 90, 0.12);
     border: 1px solid rgba(224, 90, 90, 0.3);
-    border-radius: 6px;
-    display: none;
   }
 
-  .error-message.show { display: block; }
-
-  .success-message {
-    color: #2dd4bf;
-    font-size: 12px;
-    margin-top: 8px;
-    padding: 8px;
-    background: rgba(45, 212, 191, 0.1);
+  .status-banner.success {
+    display: block;
+    color: var(--teal);
+    background: rgba(45, 212, 191, 0.12);
     border: 1px solid rgba(45, 212, 191, 0.3);
-    border-radius: 6px;
-    display: none;
   }
-
-  .success-message.show { display: block; }
-
-  /* ---- Ticket / result panel ---- */
 
   .ticket {
     position: relative;
@@ -304,7 +269,7 @@
     margin-bottom: 9px;
   }
 
-  .contrib-name { width: 92px; color: var(--text-dim); flex-shrink: 0; }
+  .contrib-name { width: 110px; color: var(--text-dim); flex-shrink: 0; }
 
   .contrib-bar-track {
     flex: 1;
@@ -322,11 +287,12 @@
 
   .contrib-bar.pos { background: var(--teal); }
   .contrib-bar.neg { background: #e05a5a; }
+  .contrib-bar.neutral { background: var(--border); }
 
   .contrib-val {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
-    width: 58px;
+    width: 75px;
     text-align: right;
     flex-shrink: 0;
   }
@@ -352,17 +318,17 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Used Car Price Prediction</div>
-    <h1>Prediction Preview</h1>
-    <p>A working preview of what the FastAPI + Swagger UI experience will feel like once a real model is trained and saved with joblib.</p>
+    <h1>Resale Price Calculator</h1>
+    <p>Predict resale values based on vehicle parameters using machine learning models.</p>
     <div class="notice">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>This is a visual mockup. Click <strong>"Predict price"</strong> to calculate or fetch the latest price estimation. Changing input values will not update the price automatically until you click the button.</div>
+      <div>Click <strong>"Predict price"</strong> to trigger SHAP prediction requests from FastAPI.</div>
     </div>
   </header>
 
   <div class="grid">
-    <form class="panel" id="predictionForm">
-      <div class="panel-label"><span class="dot"></span>Car details</div>
+    <form class="panel" id="predictionForm" onsubmit="event.preventDefault();">
+      <div class="panel-label"><span class="dot"></span>Car Specifications</div>
 
       <div class="field">
         <div class="row-2">
@@ -376,7 +342,6 @@
               <option value="Kia">Kia</option>
               <option value="Tata">Tata</option>
               <option value="Renault">Renault</option>
-              <option value="Prazo">Prazo</option>
               <option value="BMW">BMW</option>
               <option value="Honda">Honda</option>
               <option value="Ford">Ford</option>
@@ -384,9 +349,7 @@
           </div>
           <div>
             <label for="model">Model</label>
-            <select id="model">
-              <!-- Dynamically populated based on Make -->
-            </select>
+            <select id="model"></select>
           </div>
         </div>
       </div>
@@ -394,14 +357,25 @@
       <div class="field">
         <div class="row-2">
           <div>
-            <label for="year">Year</label>
-            <input type="number" id="year" value="2021" min="1990" max="2026">
+            <label for="year">Year (2015–2024)</label>
+            <select id="year">
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021" selected>2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+            </select>
           </div>
           <div>
-            <label for="fuel">Fuel type</label>
+            <label for="fuel">Fuel Type</label>
             <select id="fuel">
               <option value="Hybrid">Hybrid</option>
-              <option value="Petrol">Petrol</option>
+              <option value="Petrol" selected>Petrol</option>
               <option value="Diesel">Diesel</option>
               <option value="Electric">Electric</option>
             </select>
@@ -410,31 +384,21 @@
       </div>
 
       <div class="field">
-        <label for="mileage">Mileage (KM)</label>
-        <div class="mileage-row">
-          <input type="range" id="mileage" min="0" max="200000" step="1000" value="45000">
-          <span class="mileage-value" id="mileageValue">45,000 km</span>
-        </div>
-        <div class="hint">Higher mileage pulls the estimate down — this is the strongest depreciation signal in most used-car datasets.</div>
-      </div>
-
-      <div class="field">
-        <label for="transmission">Transmission</label>
-        <select id="transmission">
-          <option value="Automatic">Automatic</option>
-          <option value="Manual">Manual</option>
+        <label for="model_name">Prediction Model</label>
+        <select id="model_name">
+          <option value="random_forest" selected>random_forest</option>
+          <option value="xgboost">xgboost</option>
         </select>
       </div>
 
       <button type="button" class="predict-btn" id="predictBtn">Predict price</button>
-      <div class="error-message" id="errorMsg"></div>
-      <div class="success-message" id="successMsg"></div>
+      <div class="status-banner" id="statusBanner" role="alert"></div>
     </form>
 
     <div class="ticket">
       <div class="ticket-top">
-        <div class="price-label">Estimated resale price</div>
-        <div class="price-value" id="priceValue">$18,240</div>
+        <div class="price-label">Estimated Resale Price</div>
+        <div class="price-value" id="priceValue">$0</div>
         <div class="price-range" id="priceRange">Click "Predict price" to compute</div>
       </div>
       <div class="ticket-body">
@@ -445,76 +409,63 @@
   </div>
 
   <div class="footnote">
-    Backend target: <code>POST /predict</code> on your FastAPI app · Swagger UI at <code>/docs</code> once <code>uvicorn app.main:app --reload</code> is running.
+    Backend Target: <code>POST /predict</code> · OpenAPI Documentation at <code>/docs</code>
   </div>
 </div>
 
 <script>
   const el = (id) => document.getElementById(id);
-  const API_BASE_URLS = [
-    window.location.protocol === "http:" || window.location.protocol === "https:" ? window.location.origin : null,
-    "http://127.0.0.1:8000",
-    "http://localhost:8000"
+
+  const API_ENDPOINTS = [
+    window.location.protocol.startsWith("http") ? `${window.location.origin}/predict` : null,
+    "http://127.0.0.1:8000/predict",
+    "http://localhost:8000/predict"
   ].filter(Boolean);
 
-  // Dynamic Brand -> Models mapping
   const BRAND_MODELS = {
     Toyota: ["Fortuner", "Hilux", "Camry"],
     Hyundai: ["Creta", "i20", "Elantra"],
-    Maruti: ["Dzire", "Etriga", "Swift"],
+    Maruti: ["Dzire", "Ertiga", "Swift"],
     Mahindra: ["Scorpio", "Thar"],
     Kia: ["Seltos"],
-    Tata: ["Yodha"],
-    Renault: ["Kags"],
-    Prazo: ["Plato"],
-    BMW: ["3 Series"],
-    Honda: ["Civic"],
-    Ford: ["Focus"]
+    Tata: ["Nexon", "Harrier"],
+    Renault: ["Duster", "Kwid"],
+    BMW: ["3 Series", "5 Series"],
+    Honda: ["Civic", "City"],
+    Ford: ["Focus", "Mustang"]
   };
-
-  const BASE_PRICE = {
-    Toyota: 17000, Hyundai: 14000, Maruti: 11000, Mahindra: 13500,
-    Kia: 14500, Tata: 10500, Renault: 10000, Prazo: 12000,
-    BMW: 24000, Honda: 16500, Ford: 15000
-  };
-
-  const MODEL_ADJ = {
-    Fortuner: 2500, Hilux: 2000, Camry: 800,
-    Creta: 900, i20: 300, Elantra: -200,
-    Dzire: 100, Etriga: 300, Swift: 200,
-    Scorpio: 1200, Thar: 1500, Seltos: 800,
-    Yodha: 400, Kags: 300, Plato: 500,
-    "3 Series": 3200, Civic: 400, Focus: -600
-  };
-
-  const FUEL_ADJ = { Petrol: 0, Diesel: 400, Hybrid: 1200, Electric: 2500 };
-  const TRANS_ADJ = { Automatic: 500, Manual: -300 };
 
   const HORSEPOWER_LOOKUP = {
     Toyota: { Fortuner: 200, Hilux: 204, Camry: 203 },
     Hyundai: { Creta: 113, i20: 100, Elantra: 147 },
-    Maruti: { Dzire: 100, Etriga: 103, Swift: 100 },
+    Maruti: { Dzire: 100, Ertiga: 103, Swift: 100 },
     Mahindra: { Scorpio: 120, Thar: 130 },
     Kia: { Seltos: 115 },
-    Tata: { Yodha: 175 },
-    Renault: { Kags: 150 },
-    Prazo: { Plato: 250 },
-    BMW: { "3 Series": 255 },
-    Honda: { Civic: 158 },
-    Ford: { Focus: 160 }
+    Tata: { Nexon: 118, Harrier: 168 },
+    Renault: { Duster: 150, Kwid: 67 },
+    BMW: { "3 Series": 255, "5 Series": 335 },
+    Honda: { Civic: 158, City: 119 },
+    Ford: { Focus: 160, Mustang: 310 }
   };
 
-  let latestPrediction = null;
+  // Initial State: All values zeroed
+  const INITIAL_CONTRIBUTIONS = [
+    { name: "Make & Model", value: 0 },
+    { name: "Manufactured Year", value: 0 },
+    { name: "Mileage Impact", value: 0 },
+    { name: "Fuel Type", value: 0 },
+    { name: "Transmission", value: 0 },
+    { name: "Engine Power", value: 0 }
+  ];
 
   function formatUSD(n) {
     return "$" + Math.round(n).toLocaleString("en-US");
   }
 
-  // Update dynamic model dropdown options based on selected Make
   function updateModelDropdown() {
     const make = el("make").value;
     const modelSelect = el("model");
-    const availableModels = BRAND_MODELS[make] || ["Default"];
+    const availableModels = BRAND_MODELS[make] || ["Standard"];
 
     modelSelect.innerHTML = "";
     availableModels.forEach(mod => {
@@ -525,104 +476,51 @@
     });
   }
 
-  function computeMock() {
-    const make = el("make").value;
-    const model = el("model").value;
-    const year = parseInt(el("year").value, 10) || 2021;
-    const mileage = parseInt(el("mileage").value, 10);
-    const fuel = el("fuel").value;
-    const trans = el("transmission").value;
-
-    const base = BASE_PRICE[make] ?? 15000;
-    const modelAdj = MODEL_ADJ[model] ?? 0;
-    const age = Math.max(0, 2026 - year);
-    const ageAdj = -age * 650;
-    const mileageAdj = -(mileage / 1000) * 55;
-    const fuelAdj = FUEL_ADJ[fuel] ?? 0;
-    const transAdj = TRANS_ADJ[trans] ?? 0;
-
-    const total = Math.max(1500, base + modelAdj + ageAdj + mileageAdj + fuelAdj + transAdj);
-
-    return {
-      total,
-      contributions: [
-        { name: "Base (make)", value: base, isBase: true },
-        { name: "Model", value: modelAdj },
-        { name: "Age", value: ageAdj },
-        { name: "Mileage", value: mileageAdj },
-        { name: "Fuel type", value: fuelAdj },
-        { name: "Transmission", value: transAdj },
-      ]
-    };
-  }
-
-  function render() {
-    const { total, contributions } = computeMock();
-    const displayedTotal = latestPrediction?.price ?? total;
-    el("priceValue").textContent = formatUSD(displayedTotal);
-    el("priceRange").textContent = latestPrediction
-      ? `Live model prediction · ${latestPrediction.modelUsed}`
-      : `±${formatUSD(total * 0.09).replace("$","")} · preview range`;
-
-    const maxAbs = Math.max(...contributions.map(c => Math.abs(c.value)), 1);
+  function renderContributions(items) {
     const list = el("contribList");
     list.innerHTML = "";
-    contributions.forEach(c => {
-      const pct = Math.min(100, (Math.abs(c.value) / maxAbs) * 100);
-      const cls = c.isBase ? "pos" : (c.value >= 0 ? "pos" : "neg");
+
+    const maxAbs = Math.max(...items.map(c => Math.abs(c.value)), 1);
+
+    items.forEach(c => {
+      const isZero = c.value === 0;
+      const pct = isZero ? 0 : Math.min(100, (Math.abs(c.value) / maxAbs) * 100);
+      const cls = isZero ? "neutral" : (c.value > 0 ? "pos" : "neg");
+      const valDisplay = isZero ? "$0" : (c.value > 0 ? "+" + formatUSD(c.value) : "-" + formatUSD(Math.abs(c.value)));
+
       const row = document.createElement("div");
       row.className = "contrib-row";
       row.innerHTML = `
         <div class="contrib-name">${c.name}</div>
         <div class="contrib-bar-track"><div class="contrib-bar ${cls}" style="width:${pct}%"></div></div>
-        <div class="contrib-val">${c.value >= 0 ? "+" : ""}${formatUSD(c.value)}</div>
+        <div class="contrib-val">${valDisplay}</div>
       `;
       list.appendChild(row);
     });
   }
 
-  // --- EVENT LISTENERS ---
-
-  // Update slider display label ONLY (do NOT re-render price automatically)
-  el("mileage").addEventListener("input", (e) => {
-    el("mileageValue").textContent = parseInt(e.target.value, 10).toLocaleString("en-US") + " km";
-  });
-
-  // Update model choices dynamic dropdown when Make changes (do NOT re-render price automatically)
-  el("make").addEventListener("change", () => {
-    updateModelDropdown();
-  });
-
-  function showError(msg) {
-    const errorEl = el("errorMsg");
-    errorEl.textContent = msg;
-    errorEl.classList.add("show");
-    el("successMsg").classList.remove("show");
+  function showStatus(message, isError = false) {
+    const banner = el("statusBanner");
+    banner.textContent = message;
+    banner.className = `status-banner ${isError ? "error" : "success"}`;
   }
 
-  function showSuccess(msg) {
-    const successEl = el("successMsg");
-    successEl.textContent = msg;
-    successEl.classList.add("show");
-    el("errorMsg").classList.remove("show");
-  }
-
-  function clearMessages() {
-    el("errorMsg").classList.remove("show");
-    el("successMsg").classList.remove("show");
+  function clearStatus() {
+    const banner = el("statusBanner");
+    banner.className = "status-banner";
+    banner.textContent = "";
   }
 
   function buildPayload() {
     const make = el("make").value;
     const model = el("model").value;
-
     return {
-      make,
-      model,
+      make: make,
+      model: model,
       year: parseInt(el("year").value, 10),
-      mileage: parseInt(el("mileage").value, 10),
       fuel_type: el("fuel").value,
-      transmission: el("transmission").value,
+      transmission: "Automatic",
+      model_name: el("model_name").value,
       horsepower: HORSEPOWER_LOOKUP[make]?.[model] ?? 150,
       number_of_seats: 5,
       number_of_doors: 4,
@@ -633,77 +531,78 @@
     };
   }
 
-  async function postPrediction(payload) {
+  async function sendPredictionRequest(payload) {
     let lastError = null;
 
-    for (const baseUrl of API_BASE_URLS) {
+    for (const url of API_ENDPOINTS) {
       try {
-        const response = await fetch(`${baseUrl}/predict`, {
+        const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-          lastError = new Error(`API error: ${response.statusText}`);
-          continue;
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server returned ${response.status}`);
         }
 
         return await response.json();
-      } catch (error) {
-        lastError = error;
+      } catch (err) {
+        lastError = err;
       }
     }
-
-    throw lastError || new Error("Unable to reach the prediction API.");
+    throw lastError || new Error("Failed to reach prediction backend.");
   }
 
-  async function predictWithAPI() {
+  async function handlePrediction() {
     const btn = el("predictBtn");
-    const originalText = btn.textContent;
+    const year = parseInt(el("year").value, 10);
+
+    if (isNaN(year) || year < 2015 || year > 2024) {
+      showStatus("Year must be between 2015 and 2024.", true);
+      return;
+    }
+
+    clearStatus();
+    btn.disabled = true;
+    btn.textContent = "Calculating...";
 
     try {
-      const year = parseInt(el("year").value, 10);
-      if (year < 1990 || year > 2026) {
-        showError("Year must be between 1990 and 2026");
-        return;
+      const data = await sendPredictionRequest(buildPayload());
+      const price = data.predicted_price ?? data.prediction;
+
+      if (typeof price !== "number") {
+        throw new Error("Invalid response format received from API.");
       }
 
-      clearMessages();
-      btn.disabled = true;
-      btn.textContent = "Loading...";
+      el("priceValue").textContent = formatUSD(price);
+      el("priceRange").textContent = `Model Prediction · ${data.model_used || "random_forest"}`;
 
-      const data = await postPrediction(buildPayload());
-      const predictedPrice = data.predicted_price ?? data.prediction;
-
-      if (typeof predictedPrice !== "number") {
-        throw new Error("API response did not include a numeric prediction");
+      if (Array.isArray(data.contributions) && data.contributions.length > 0) {
+        renderContributions(data.contributions);
       }
 
-      latestPrediction = {
-        price: predictedPrice,
-        modelUsed: data.model_used || "trained model"
-      };
-
-      showSuccess(`✓ Prediction received from API: ${formatUSD(predictedPrice)} (${latestPrediction.modelUsed})`);
-      render();
+      showStatus(`✓ Received prediction: ${formatUSD(price)}`);
     } catch (err) {
-      console.error(err);
-      latestPrediction = null;
-      showError(`Failed to fetch prediction: ${err.message}. Displaying formula prediction.`);
-      render();
+      console.warn("Prediction error:", err);
+      showStatus(`API Unavailable (${err.message}).`, true);
     } finally {
       btn.disabled = false;
-      btn.textContent = originalText;
+      btn.textContent = "Predict price";
     }
   }
 
-  // Bind Prediction calculation ONLY to button click
-  el("predictBtn").addEventListener("click", predictWithAPI);
+  // Event Listeners
+  el("make").addEventListener("change", () => {
+    updateModelDropdown();
+  });
 
-  // Initialize dropdown options and perform initial calculation on page load
+  el("predictBtn").addEventListener("click", handlePrediction);
+
+  // Initial Page Render
   updateModelDropdown();
-  render();
+  renderContributions(INITIAL_CONTRIBUTIONS);
 </script>
 </body>
 </html>
