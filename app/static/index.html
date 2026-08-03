@@ -35,7 +35,7 @@
   }
 
   .wrap {
-    max-width: 980px;
+    max-width: 1080px;
     margin: 0 auto;
   }
 
@@ -83,13 +83,13 @@
 
   .grid {
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-top: 28px;
     align-items: start;
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 900px) {
     .grid { grid-template-columns: 1fr; }
   }
 
@@ -127,19 +127,13 @@
     margin-bottom: 6px;
   }
 
-  .field .hint {
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin-top: 5px;
-  }
-
   .row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
 
-  select, input[type="number"] {
+  select, input[type="number"], input[type="text"] {
     width: 100%;
     background: var(--surface-raised);
     border: 1px solid var(--border);
@@ -152,11 +146,7 @@
     transition: border-color 0.15s ease;
   }
 
-  select:focus, input[type="number"]:focus { border-color: var(--teal); }
-  select:focus-visible, input[type="number"]:focus-visible, button:focus-visible {
-    outline: 2px solid var(--teal);
-    outline-offset: 2px;
-  }
+  select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: var(--teal); }
 
   button.predict-btn {
     margin-top: 22px;
@@ -193,19 +183,13 @@
     border: 1px solid rgba(224, 90, 90, 0.3);
   }
 
-  .status-banner.success {
-    display: block;
-    color: var(--teal);
-    background: rgba(45, 212, 191, 0.12);
-    border: 1px solid rgba(45, 212, 191, 0.3);
-  }
-
   .ticket {
     position: relative;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    margin-bottom: 20px;
   }
 
   .ticket-top {
@@ -232,22 +216,17 @@
     text-transform: uppercase;
     color: var(--text-dim);
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
   }
 
   .price-value {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 42px;
+    font-size: 38px;
     font-weight: 700;
-    color: var(--amber);
+    color: var(--teal);
     letter-spacing: -0.02em;
     line-height: 1;
-  }
-
-  .price-range {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    color: var(--text-dim);
-    margin-top: 10px;
   }
 
   .ticket-body { padding: 18px 22px 22px; }
@@ -297,6 +276,19 @@
     flex-shrink: 0;
   }
 
+  .comparison-banner {
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 20px;
+    display: none;
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    color: var(--teal);
+  }
+
   .footnote {
     margin-top: 30px;
     font-size: 12px;
@@ -318,11 +310,11 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Used Car Price Prediction</div>
-    <h1>Resale Price Calculator</h1>
-    <p>Predict resale values based on vehicle parameters using machine learning models.</p>
+    <h1>Resale Price Calculator & Model Comparison</h1>
+    <p>Compare Random Forest vs XGBoost predictions for any vehicle.</p>
     <div class="notice">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>Click <strong>"Predict price"</strong> to trigger SHAP prediction requests from FastAPI.</div>
+      <div>Click <strong>"Predict & Compare"</strong> to evaluate the vehicle using both models simultaneously.</div>
     </div>
   </header>
 
@@ -357,7 +349,7 @@
       <div class="field">
         <div class="row-2">
           <div>
-            <label for="year">Year (2015–2024)</label>
+            <label for="year">Year</label>
             <select id="year">
               <option value="2024">2024</option>
               <option value="2023">2023</option>
@@ -372,39 +364,86 @@
             </select>
           </div>
           <div>
-            <label for="fuel">Fuel Type</label>
-            <select id="fuel">
-              <option value="Hybrid">Hybrid</option>
-              <option value="Petrol" selected>Petrol</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Electric">Electric</option>
+            <label for="mileage">Mileage (KM)</label>
+            <select id="mileage">
+              <option value="10000">10,000 KM (Almost New / Demo)</option>
+              <option value="30000">30,000 KM (Low Mileage)</option>
+              <option value="45000" selected>45,000 KM (Below Average)</option>
+              <option value="60000">60,000 KM (Average Mileage)</option>
+              <option value="80000">80,000 KM (Above Average)</option>
+              <option value="100000">100,000 KM (High Mileage)</option>
+              <option value="150000">150,000 KM (Very High Mileage)</option>
+              <option value="200000">200,000+ KM (Heavily Used)</option>
             </select>
           </div>
         </div>
       </div>
 
       <div class="field">
-        <label for="model_name">Prediction Model</label>
-        <select id="model_name">
-          <option value="random_forest" selected>random_forest</option>
-          <option value="xgboost">xgboost</option>
+        <div class="row-2">
+          <div>
+            <label for="fuel">Fuel Type</label>
+            <select id="fuel">
+              <option value="Petrol" selected>Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Electric">Electric</option>
+            </select>
+          </div>
+          <div>
+            <label for="transmission">Transmission</label>
+            <select id="transmission">
+              <option value="Automatic" selected>Automatic</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="horsepower">Horsepower</label>
+        <select id="horsepower">
+          <option value="100">100 HP (Compact / Economy)</option>
+          <option value="150" selected>150 HP (Standard Sedan / SUV)</option>
+          <option value="200">200 HP (Mid-size SUV / Premium Sedan)</option>
+          <option value="250">250 HP (V6 / Turbo Sedan)</option>
+          <option value="300">300 HP (Sports / Performance)</option>
+          <option value="350">350 HP (High Performance)</option>
+          <option value="400">400+ HP (Luxury / Supercar)</option>
         </select>
       </div>
 
-      <button type="button" class="predict-btn" id="predictBtn">Predict price</button>
+      <button type="button" class="predict-btn" id="predictBtn">Predict & Compare</button>
       <div class="status-banner" id="statusBanner" role="alert"></div>
     </form>
 
-    <div class="ticket">
-      <div class="ticket-top">
-        <div class="price-label">Estimated Resale Price</div>
-        <div class="price-value" id="priceValue">$0</div>
-        <div class="price-range" id="priceRange">Click "Predict price" to compute</div>
+    <div class="results-column">
+      <div class="comparison-banner" id="comparisonBanner"></div>
+
+      <!-- Random Forest Ticket -->
+      <div class="ticket">
+        <div class="ticket-top">
+          <div class="price-label"><span>Random Forest Prediction</span></div>
+          <div class="price-value" id="rfPriceValue">$0</div>
+        </div>
+        <div class="ticket-body">
+          <div class="contrib-title">Random Forest Feature Impact</div>
+          <div id="rfContribList"></div>
+        </div>
       </div>
-      <div class="ticket-body">
-        <div class="contrib-title">What moved the estimate</div>
-        <div id="contribList"></div>
+
+      <!-- XGBoost Ticket -->
+      <div class="ticket" style="margin-top: 20px;">
+        <div class="ticket-top">
+          <div class="price-label"><span>XGBoost Prediction</span></div>
+          <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
+        </div>
+        <div class="ticket-body">
+          <div class="contrib-title">XGBoost Feature Impact</div>
+          <div id="xgbContribList"></div>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -448,16 +487,6 @@
     Ford: { Focus: 160, Mustang: 310 }
   };
 
-  // Initial State: All values zeroed
-  const INITIAL_CONTRIBUTIONS = [
-    { name: "Make & Model", value: 0 },
-    { name: "Manufactured Year", value: 0 },
-    { name: "Mileage Impact", value: 0 },
-    { name: "Fuel Type", value: 0 },
-    { name: "Transmission", value: 0 },
-    { name: "Engine Power", value: 0 }
-  ];
-
   function formatUSD(n) {
     return "$" + Math.round(n).toLocaleString("en-US");
   }
@@ -474,10 +503,27 @@
       opt.textContent = mod;
       modelSelect.appendChild(opt);
     });
+
+    // Update default horsepower for new make/model combination
+    const newModel = availableModels[0];
+    const defaultHp = HORSEPOWER_LOOKUP[make]?.[newModel];
+    if (defaultHp) {
+      el("horsepower").value = defaultHp;
+    }
   }
 
-  function renderContributions(items) {
-    const list = el("contribList");
+  el("make").addEventListener("change", updateModelDropdown);
+  el("model").addEventListener("change", () => {
+    const make = el("make").value;
+    const model = el("model").value;
+    const defaultHp = HORSEPOWER_LOOKUP[make]?.[model];
+    if (defaultHp) {
+      el("horsepower").value = defaultHp;
+    }
+  });
+
+  function renderContributions(items, listId) {
+    const list = el(listId);
     list.innerHTML = "";
 
     const maxAbs = Math.max(...items.map(c => Math.abs(c.value)), 1);
@@ -503,31 +549,31 @@
     const banner = el("statusBanner");
     banner.textContent = message;
     banner.className = `status-banner ${isError ? "error" : "success"}`;
+    banner.style.display = "block";
   }
 
   function clearStatus() {
     const banner = el("statusBanner");
+    banner.style.display = "none";
     banner.className = "status-banner";
-    banner.textContent = "";
   }
 
-  function buildPayload() {
-    const make = el("make").value;
-    const model = el("model").value;
+  function buildPayload(modelName) {
     return {
-      make: make,
-      model: model,
+      make: el("make").value,
+      model: el("model").value,
       year: parseInt(el("year").value, 10),
+      mileage: parseFloat(el("mileage").value) || 0,
       fuel_type: el("fuel").value,
-      transmission: "Automatic",
-      model_name: el("model_name").value,
-      horsepower: HORSEPOWER_LOOKUP[make]?.[model] ?? 150,
+      transmission: el("transmission").value,
+      horsepower: parseFloat(el("horsepower").value) || 0,
       number_of_seats: 5,
       number_of_doors: 4,
-      location: "California",
-      car_type: "SUV",
-      color: "Gray",
-      sale_status: "Used"
+      location: "Dubai",
+      car_type: "Sedan",
+      color: "White",
+      sale_status: "Used",
+      model_name: modelName
     };
   }
 
@@ -559,50 +605,70 @@
     const btn = el("predictBtn");
     const year = parseInt(el("year").value, 10);
 
-    if (isNaN(year) || year < 2015 || year > 2024) {
-      showStatus("Year must be between 2015 and 2024.", true);
+    if (isNaN(year) || year < 1990 || year > 2025) {
+      showStatus("Please enter a valid year.", true);
       return;
     }
 
     clearStatus();
     btn.disabled = true;
     btn.textContent = "Calculating...";
+    el("comparisonBanner").style.display = "none";
 
     try {
-      const data = await sendPredictionRequest(buildPayload());
-      const price = data.predicted_price ?? data.prediction;
+      // Fetch predictions for both models simultaneously
+      const [rfData, xgbData] = await Promise.all([
+        sendPredictionRequest(buildPayload("random_forest")),
+        sendPredictionRequest(buildPayload("xgboost"))
+      ]);
 
-      if (typeof price !== "number") {
-        throw new Error("Invalid response format received from API.");
+      const rfPrice = rfData.predicted_price ?? rfData.prediction;
+      const xgbPrice = xgbData.predicted_price ?? xgbData.prediction;
+
+      el("rfPriceValue").textContent = formatUSD(rfPrice);
+      el("xgbPriceValue").textContent = formatUSD(xgbPrice);
+
+      if (Array.isArray(rfData.contributions) && rfData.contributions.length > 0) {
+        renderContributions(rfData.contributions, "rfContribList");
+      }
+      if (Array.isArray(xgbData.contributions) && xgbData.contributions.length > 0) {
+        renderContributions(xgbData.contributions, "xgbContribList");
       }
 
-      el("priceValue").textContent = formatUSD(price);
-      el("priceRange").textContent = `Model Prediction · ${data.model_used || "random_forest"}`;
+      // Show comparison
+      const diff = Math.abs(rfPrice - xgbPrice);
+      const higherModel = rfPrice > xgbPrice ? "Random Forest" : "XGBoost";
+      
+      const banner = el("comparisonBanner");
+      banner.style.display = "block";
+      banner.innerHTML = `<strong>${higherModel}</strong> predicts a <strong>${formatUSD(diff)}</strong> higher resale price.`;
 
-      if (Array.isArray(data.contributions) && data.contributions.length > 0) {
-        renderContributions(data.contributions);
-      }
-
-      showStatus(`✓ Received prediction: ${formatUSD(price)}`);
     } catch (err) {
       console.warn("Prediction error:", err);
       showStatus(`API Unavailable (${err.message}).`, true);
     } finally {
       btn.disabled = false;
-      btn.textContent = "Predict price";
+      btn.textContent = "Predict & Compare";
     }
   }
 
-  // Event Listeners
-  el("make").addEventListener("change", () => {
-    updateModelDropdown();
-  });
-
   el("predictBtn").addEventListener("click", handlePrediction);
 
-  // Initial Page Render
+  // Initial Setup
   updateModelDropdown();
-  renderContributions(INITIAL_CONTRIBUTIONS);
+  
+  // Initialize with zeroed state
+  const INITIAL_CONTRIBUTIONS = [
+    { name: "Make & Model", value: 0 },
+    { name: "Manufactured Year", value: 0 },
+    { name: "Mileage Impact", value: 0 },
+    { name: "Fuel Type", value: 0 },
+    { name: "Transmission", value: 0 },
+    { name: "Engine Power", value: 0 }
+  ];
+  renderContributions(INITIAL_CONTRIBUTIONS, "rfContribList");
+  renderContributions(INITIAL_CONTRIBUTIONS, "xgbContribList");
+
 </script>
 </body>
 </html>

@@ -34,6 +34,7 @@ if not hasattr(np, "float_"):
 import pandas as pd
 import shap
 from fastapi import FastAPI, HTTPException, status
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from sklearn.compose import ColumnTransformer
@@ -59,6 +60,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MODELS_DIR = BASE_DIR / "models"
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "used_car_sales.csv"
+
+# Mount static files
+app.mount("/app/static", StaticFiles(directory=str(BASE_DIR / "app" / "static")), name="static")
 
 DEFAULT_MODEL_NAME = "random_forest"
 TREE_CATEGORICAL_COLUMNS = ["Manufacturer Name", "Car Type", "Energy", "Gearbox"]
@@ -297,10 +301,7 @@ def _build_model_input(car: CarFeatures) -> np.ndarray:
         if col not in processed_row.columns:
             processed_row[col] = "NA"
 
-    try:
-        return artifacts["tree_preprocessor"].transform(processed_row)
-    except Exception:
-        return raw_features
+    return raw_features
 
 
 @app.get("/")
