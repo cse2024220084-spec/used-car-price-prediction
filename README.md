@@ -67,7 +67,7 @@ To run this project locally, follow these steps in your terminal:
 
 1. **Activate the Virtual Environment**:
    ```bash
-   venv\Scripts\activate
+   venv/Scripts/activate
    ```
 2. **Start the FastAPI Server**:
    ```bash
