@@ -75,7 +75,7 @@ To run this project locally, follow these steps in your terminal:
    ```
 3. **Access the Application In Local**:
    Open your browser and navigate to: `http://127.0.0.1:8000/app/static/index.html`
-4. **Live Demo:**: [Click Me🚀](http://18.136.104.232/app/static/index.html)
+4. **Live Demo:** <a href="http://18.136.104.232/app/static/index.html" target="_blank">CLICK ME🚀</a>
 
 ---
 
