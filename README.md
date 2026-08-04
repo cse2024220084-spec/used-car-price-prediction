@@ -73,8 +73,9 @@ To run this project locally, follow these steps in your terminal:
    ```bash
    uvicorn app.main:app --reload
    ```
-3. **Access the Application**:
+3. **Access the Application In Local**:
    Open your browser and navigate to: `http://127.0.0.1:8000/app/static/index.html`
+4. **Live Demo:**: [Click Me🚀](http://18.136.104.232/app/static/index.html)
 
 ---
 
