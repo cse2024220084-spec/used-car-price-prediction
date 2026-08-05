@@ -1,892 +1,984 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Used Car Price Prediction — Interactive Tool</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #12161d;
-    --surface: #1a1f28;
-    --surface-raised: #202632;
-    --border: #2a3140;
-    --text: #e7eaf0;
-    --text-dim: #8b93a3;
-    --teal: #2dd4bf;
-    --amber: #f5a623;
-    --amber-dim: #8a5f1e;
-    --indigo: #818cf8;
-    --indigo-bg: rgba(129, 140, 248, 0.12);
-    --notice-bg: rgba(245,166,35,0.08);
-    --notice-text: #e8c98a;
-    --radius: 10px;
-    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-  }
-
-  [data-theme="light"] {
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --surface-raised: #f1f5f9;
-    --border: #cbd5e1;
-    --text: #0f172a;
-    --text-dim: #64748b;
-    --teal: #0d9488;
-    --amber: #d97706;
-    --amber-dim: #fef3c7;
-    --indigo: #4f46e5;
-    --indigo-bg: rgba(79, 70, 229, 0.08);
-    --notice-bg: #fffbeb;
-    --notice-text: #92400e;
-    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    background-image:
-      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.06), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(245,166,35,0.05), transparent 40%);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    padding: 32px 20px 60px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  .wrap {
-    max-width: 1080px;
-    margin: 0 auto;
-  }
-
-  header {
-    margin-bottom: 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .header-content { flex: 1; min-width: 280px; }
-
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    color: var(--teal);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 30px;
-    font-weight: 600;
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
-  }
-
-  header p {
-    color: var(--text-dim);
-    font-size: 14.5px;
-    max-width: 560px;
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  .theme-toggle-btn {
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow);
-  }
-
-  .theme-toggle-btn:hover {
-    border-color: var(--teal);
-    transform: translateY(-1px);
-  }
-
-  .notice {
-    margin-top: 18px;
-    background: var(--notice-bg);
-    border: 1px solid var(--amber-dim);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--notice-text);
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .notice svg { flex-shrink: 0; margin-top: 2px; }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 28px;
-    align-items: start;
-  }
-
-  @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px;
-    box-shadow: var(--shadow);
-  }
-
-  .panel-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .panel-label .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--teal);
-  }
-
-  .field { margin-bottom: 16px; }
-
-  .field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .row-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  select, input[type="number"], input[type="text"] {
-    width: 100%;
-    background: var(--surface-raised);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 7px;
-    padding: 9px 11px;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.15s ease, background-color 0.3s ease;
-  }
-
-  select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: var(--teal); }
-
-  button.predict-btn {
-    margin-top: 22px;
-    width: 100%;
-    background: var(--teal);
-    color: #0b1410;
-    border: none;
-    border-radius: 7px;
-    padding: 12px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 600;
-    font-size: 14.5px;
-    cursor: pointer;
-    transition: filter 0.15s ease, transform 0.1s ease;
-  }
-
-  button.predict-btn:hover { filter: brightness(1.08); }
-  button.predict-btn:active { transform: scale(0.995); }
-  button.predict-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .status-banner {
-    font-size: 12px;
-    margin-top: 12px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    display: none;
-    line-height: 1.4;
-  }
-
-  .status-banner.error {
-    display: block;
-    color: #f87171;
-    background: rgba(224, 90, 90, 0.12);
-    border: 1px solid rgba(224, 90, 90, 0.3);
-  }
-
-  .ticket {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-
-  .ticket.actual-ticket {
-    border-color: var(--indigo);
-    background: var(--indigo-bg);
-  }
-
-  .ticket-top {
-    padding: 22px 22px 18px;
-    border-bottom: 1px dashed var(--border);
-    position: relative;
-  }
-
-  .ticket-top::before, .ticket-top::after {
-    content: "";
-    position: absolute;
-    bottom: -9px;
-    width: 18px; height: 18px;
-    background: var(--bg);
-    border-radius: 50%;
-    transition: background-color 0.3s ease;
-  }
-  .ticket-top::before { left: -9px; }
-  .ticket-top::after { right: -9px; }
-
-  .price-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .price-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-  }
-
-  .price-value {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--teal);
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-
-  .price-value.actual { color: var(--indigo); }
-
-  .variance-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: var(--surface-raised);
-    display: inline-block;
-  }
-
-  .variance-badge.pos { color: #f87171; }
-  .variance-badge.neg { color: var(--teal); }
-  .variance-badge.exact { color: var(--indigo); }
-
-  .ticket-body { padding: 18px 22px 22px; }
-
-  .contrib-title {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 12px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .contrib-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    margin-bottom: 9px;
-  }
-
-  .contrib-name { width: 110px; color: var(--text-dim); flex-shrink: 0; }
-
-  .contrib-bar-track {
-    flex: 1;
-    height: 6px;
-    background: var(--surface-raised);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .contrib-bar {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.4s ease;
-  }
-
-  .contrib-bar.pos { background: var(--teal); }
-  .contrib-bar.neg { background: #e05a5a; }
-  .contrib-bar.neutral { background: var(--border); }
-
-  .contrib-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    width: 75px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .comparison-banner {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 20px;
-    display: none;
-    text-align: left;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    box-shadow: var(--shadow);
-  }
-
-  .comparison-banner .metric-line {
-    margin-top: 6px;
-    font-size: 13px;
-    color: var(--text-dim);
-  }
-
-  .explanation-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-top: 24px;
-    box-shadow: var(--shadow);
-  }
-
-  .explanation-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text);
-  }
-
-  .explanation-content p {
-    font-size: 13.5px;
-    color: var(--text-dim);
-    line-height: 1.6;
-    margin: 0 0 10px;
-  }
-  .explanation-content p:last-child { margin-bottom: 0; }
-  .explanation-content strong { color: var(--text); }
-  .explanation-content em { color: var(--teal); font-style: normal; }
-
-  .footnote {
-    margin-top: 30px;
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-    line-height: 1.6;
-  }
-
-  .footnote code {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--surface-raised);
-    padding: 1px 6px;
-    border-radius: 4px;
-    color: var(--teal);
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div class="header-content">
-      <div class="eyebrow">Used Car Price Prediction</div>
-      <h1>Resale Price Calculator & Model Comparison</h1>
-      <p>Compare Random Forest vs XGBoost predictions against Actual Market Price returned by the backend.</p>
-    </div>
-    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
-      <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
-    </button>
-
-    <div class="notice">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will return the Actual Market Price alongside predictions from both machine learning models.</div>
-    </div>
-  </header>
-
-  <div class="grid">
-    <form class="panel" id="predictionForm" onsubmit="event.preventDefault();">
-      <div class="panel-label"><span class="dot"></span>Car Specifications</div>
-
-      <div class="field">
-        <div class="row-2">
-          <div>
-            <label for="make">Make</label>
-            <select id="make">
-              <option value="Toyota">Toyota</option>
-              <option value="Hyundai">Hyundai</option>
-              <option value="Maruti">Maruti</option>
-              <option value="Mahindra">Mahindra</option>
-              <option value="Kia">Kia</option>
-              <option value="Tata">Tata</option>
-              <option value="Renault">Renault</option>
-              <option value="BMW">BMW</option>
-              <option value="Honda">Honda</option>
-              <option value="Ford">Ford</option>
-            </select>
-          </div>
-          <div>
-            <label for="model">Model</label>
-            <select id="model"></select>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="row-2">
-          <div>
-            <label for="year">Year</label>
-            <select id="year">
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021" selected>2021</option>
-              <option value="2020">2020</option>
-              <option value="2019">2019</option>
-              <option value="2018">2018</option>
-              <option value="2017">2017</option>
-              <option value="2016">2016</option>
-              <option value="2015">2015</option>
-            </select>
-          </div>
-          <div>
-            <label for="mileage">Mileage (KM)</label>
-            <select id="mileage">
-              <option value="10000">10,000 KM</option>
-              <option value="30000">30,000 KM</option>
-              <option value="45000" selected>45,000 KM</option>
-              <option value="60000">60,000 KM</option>
-              <option value="80000">80,000 KM</option>
-              <option value="100000">100,000 KM</option>
-              <option value="150000">150,000 KM</option>
-              <option value="200000">200,000+ KM</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="row-2">
-          <div>
-            <label for="fuel">Fuel Type</label>
-            <select id="fuel">
-              <option value="Petrol" selected>Petrol</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Hybrid">Hybrid</option>
-              <option value="Electric">Electric</option>
-            </select>
-          </div>
-          <div>
-            <label for="transmission">Transmission</label>
-            <select id="transmission">
-              <option value="Automatic" selected>Automatic</option>
-              <option value="Manual">Manual</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="horsepower">Horsepower</label>
-        <select id="horsepower">
-          <option value="100">100 HP (Compact / Economy)</option>
-          <option value="150" selected>150 HP (Standard Sedan / SUV)</option>
-          <option value="200">200 HP (Mid-size SUV / Premium Sedan)</option>
-          <option value="250">250 HP (V6 / Turbo Sedan)</option>
-          <option value="300">300 HP (Sports / Performance)</option>
-          <option value="350">350 HP (High Performance)</option>
-          <option value="400">400+ HP (Luxury / Supercar)</option>
-        </select>
-      </div>
-
-      <button type="button" class="predict-btn" id="predictBtn">Predict & Compare</button>
-      <div class="status-banner" id="statusBanner" role="alert"></div>
-    </form>
-
-    <div class="results-column">
-      <div class="comparison-banner" id="comparisonBanner"></div>
-
-      <!-- Actual Market Price Ticket -->
-      <div class="ticket actual-ticket" id="actualTicket">
-        <div class="ticket-top">
-          <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
-          <div class="price-header-row">
-            <div class="price-value actual" id="actualPriceValue">$0</div>
-            <div class="variance-badge exact" id="actualBadge">Dataset Benchmark</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Random Forest Ticket -->
-      <div class="ticket">
-        <div class="ticket-top">
-          <div class="price-label"><span>🌲 Random Forest Prediction</span></div>
-          <div class="price-header-row">
-            <div class="price-value" id="rfPriceValue">$0</div>
-            <div class="variance-badge" id="rfVarianceBadge">--</div>
-          </div>
-        </div>
-        <div class="ticket-body">
-          <div class="contrib-title">Random Forest Feature Impact</div>
-          <div id="rfContribList"></div>
-        </div>
-      </div>
-
-      <!-- XGBoost Ticket -->
-      <div class="ticket">
-        <div class="ticket-top">
-          <div class="price-label"><span>⚡ XGBoost Prediction</span></div>
-          <div class="price-header-row">
-            <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
-            <div class="variance-badge" id="xgbVarianceBadge">--</div>
-          </div>
-        </div>
-        <div class="ticket-body">
-          <div class="contrib-title">XGBoost Feature Impact</div>
-          <div id="xgbContribList"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Explanatory Section for Price Discrepancies -->
-  <div class="explanation-card">
-    <div class="explanation-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      Why Predictions Differ from the Actual Market Price
-    </div>
-    <div class="explanation-content">
-      <p><strong>1. Static Dataset Benchmark vs. Dynamic Feature Modeling:</strong> The <em>Actual Market Price</em> represents the raw median price recorded in historical transaction data for this Make, Model, and Manufactured Year. It acts as an unadjusted baseline reference.</p>
-      <p><strong>2. Random Forest Model Adjustment (Bagging):</strong> Random Forest constructs 100 parallel decision trees. It averages continuous inputs (e.g., exact mileage wear, horsepower, transmission) to prevent overfitting, resulting in a conservative and stable estimate.</p>
-      <p><strong>3. XGBoost Model Adjustment (Gradient Boosting):</strong> XGBoost sequentially builds decision trees to minimize residual errors. It heavily penalizes wear factors (like high mileage) and rewards premium power options, capturing complex non-linear price drops.</p>
-      <p><strong>4. Summary:</strong> The machine learning models adjust the static historical actual price up or down based on your vehicle's specific combination of mileage, horsepower, transmission, and fuel type.</p>
-    </div>
-  </div>
-
-  <div class="footnote">
-    Backend Target: <code>POST /predict</code> · OpenAPI Documentation at <code>/docs</code>
-  </div>
-</div>
-
-<script>
-  const el = (id) => document.getElementById(id);
-
-  // Theme Management
-  function initTheme() {
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    document.documentElement.setAttribute("data-theme", savedTheme);
-    updateThemeButton(savedTheme);
-  }
-
-  function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
-    updateThemeButton(newTheme);
-  }
-
-  function updateThemeButton(theme) {
-    const icon = el("themeIcon");
-    const label = el("themeLabel");
-    if (theme === "dark") {
-      icon.textContent = "☀️";
-      label.textContent = "Light Mode";
-    } else {
-      icon.textContent = "🌙";
-      label.textContent = "Dark Mode";
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Used Car Price Prediction — Interactive Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #12161d;
+      --surface: #1a1f28;
+      --surface-raised: #202632;
+      --border: #2a3140;
+      --text: #e7eaf0;
+      --text-dim: #8b93a3;
+      --teal: #2dd4bf;
+      --amber: #f5a623;
+      --amber-dim: #8a5f1e;
+      --indigo: #818cf8;
+      --indigo-bg: rgba(129, 140, 248, 0.12);
+      --notice-bg: rgba(245, 166, 35, 0.08);
+      --notice-text: #e8c98a;
+      --radius: 10px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
-  }
 
-  const API_ENDPOINTS = [
-    window.location.protocol.startsWith("http") ? `${window.location.origin}/predict` : null,
-    "http://127.0.0.1:8000/predict",
-    "http://localhost:8000/predict"
-  ].filter(Boolean);
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-raised: #f1f5f9;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --teal: #0d9488;
+      --amber: #d97706;
+      --amber-dim: #fef3c7;
+      --indigo: #4f46e5;
+      --indigo-bg: rgba(79, 70, 229, 0.08);
+      --notice-bg: #fffbeb;
+      --notice-text: #92400e;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
 
-  const BRAND_MODELS = {
-    Toyota: ["Fortuner", "Hilux", "Camry"],
-    Hyundai: ["Creta", "i20", "Elantra"],
-    Maruti: ["Dzire", "Ertiga", "Swift"],
-    Mahindra: ["Scorpio", "Thar"],
-    Kia: ["Seltos"],
-    Tata: ["Nexon", "Harrier"],
-    Renault: ["Duster", "Kwid"],
-    BMW: ["3 Series", "5 Series"],
-    Honda: ["Civic", "City"],
-    Ford: ["Focus", "Mustang"]
-  };
+    * {
+      box-sizing: border-box;
+    }
 
-  const HORSEPOWER_LOOKUP = {
-    Toyota: { Fortuner: 200, Hilux: 204, Camry: 203 },
-    Hyundai: { Creta: 113, i20: 100, Elantra: 147 },
-    Maruti: { Dzire: 100, Ertiga: 103, Swift: 100 },
-    Mahindra: { Scorpio: 120, Thar: 130 },
-    Kia: { Seltos: 115 },
-    Tata: { Nexon: 118, Harrier: 168 },
-    Renault: { Duster: 150, Kwid: 67 },
-    BMW: { "3 Series": 255, "5 Series": 335 },
-    Honda: { Civic: 158, City: 119 },
-    Ford: { Focus: 160, Mustang: 310 }
-  };
+    body {
+      margin: 0;
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(45, 212, 191, 0.06), transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(245, 166, 35, 0.05), transparent 40%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 32px 20px 60px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
 
-  function formatUSD(n) {
-    return "$" + Math.round(n).toLocaleString("en-US");
-  }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
 
-  function updateModelDropdown() {
-    const make = el("make").value;
-    const modelSelect = el("model");
-    const availableModels = BRAND_MODELS[make] || ["Standard"];
+    header {
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-    modelSelect.innerHTML = "";
-    availableModels.forEach(mod => {
-      const opt = document.createElement("option");
-      opt.value = mod;
-      opt.textContent = mod;
-      modelSelect.appendChild(opt);
+    .header-content {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--teal);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 30px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 14.5px;
+      max-width: 560px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .theme-toggle-btn {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--teal);
+      transform: translateY(-1px);
+    }
+
+    .notice {
+      margin-top: 18px;
+      background: var(--notice-bg);
+      border: 1px solid var(--amber-dim);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--notice-text);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .notice svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-label .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.3s ease;
+    }
+
+    select:focus,
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--teal);
+    }
+
+    button.predict-btn {
+      margin-top: 22px;
+      width: 100%;
+      background: var(--teal);
+      color: #0b1410;
+      border: none;
+      border-radius: 7px;
+      padding: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 14.5px;
+      cursor: pointer;
+      transition: filter 0.15s ease, transform 0.1s ease;
+    }
+
+    button.predict-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    button.predict-btn:active {
+      transform: scale(0.995);
+    }
+
+    button.predict-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status-banner {
+      font-size: 12px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .status-banner.error {
+      display: block;
+      color: #f87171;
+      background: rgba(224, 90, 90, 0.12);
+      border: 1px solid rgba(224, 90, 90, 0.3);
+    }
+
+    .ticket {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .ticket.actual-ticket {
+      border-color: var(--indigo);
+      background: var(--indigo-bg);
+    }
+
+    .ticket-top {
+      padding: 22px 22px 18px;
+      border-bottom: 1px dashed var(--border);
+      position: relative;
+    }
+
+    .ticket-top::before,
+    .ticket-top::after {
+      content: "";
+      position: absolute;
+      bottom: -9px;
+      width: 18px;
+      height: 18px;
+      background: var(--bg);
+      border-radius: 50%;
+      transition: background-color 0.3s ease;
+    }
+
+    .ticket-top::before {
+      left: -9px;
+    }
+
+    .ticket-top::after {
+      right: -9px;
+    }
+
+    .price-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .price-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .price-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .price-value.actual {
+      color: var(--indigo);
+    }
+
+    .variance-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--surface-raised);
+      display: inline-block;
+    }
+
+    .variance-badge.pos {
+      color: #f87171;
+    }
+
+    .variance-badge.neg {
+      color: var(--teal);
+    }
+
+    .variance-badge.exact {
+      color: var(--indigo);
+    }
+
+    .ticket-body {
+      padding: 18px 22px 22px;
+    }
+
+    .contrib-title {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .contrib-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .contrib-name {
+      width: 110px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .contrib-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--surface-raised);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .contrib-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .contrib-bar.pos {
+      background: var(--teal);
+    }
+
+    .contrib-bar.neg {
+      background: #e05a5a;
+    }
+
+    .contrib-bar.neutral {
+      background: var(--border);
+    }
+
+    .contrib-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      width: 75px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .comparison-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: none;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: var(--shadow);
+    }
+
+    .comparison-banner .metric-line {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .explanation-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .explanation-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .explanation-content p {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin: 0 0 10px;
+    }
+
+    .explanation-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .explanation-content strong {
+      color: var(--text);
+    }
+
+    .explanation-content em {
+      color: var(--teal);
+      font-style: normal;
+    }
+
+    .footnote {
+      margin-top: 30px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footnote code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--surface-raised);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--teal);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="header-content">
+        <div class="eyebrow">Used Car Price Prediction</div>
+        <h1>Resale Price Calculator & Model Comparison</h1>
+        <p>Compare Random Forest vs XGBoost predictions against Actual Market Price returned by the backend.</p>
+      </div>
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+        <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
+      </button>
+
+      <div class="notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will return the
+          Actual Market Price alongside predictions from both machine learning models.</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <form class="panel" id="predictionForm" onsubmit="event.preventDefault();">
+        <div class="panel-label"><span class="dot"></span>Car Specifications</div>
+
+        <div class="field">
+          <div class="row-2">
+            <div>
+              <label for="make">Make</label>
+              <select id="make">
+                <option value="Toyota">Toyota</option>
+                <option value="Hyundai">Hyundai</option>
+                <option value="Maruti">Maruti</option>
+                <option value="Mahindra">Mahindra</option>
+                <option value="Kia">Kia</option>
+                <option value="Tata">Tata</option>
+                <option value="Renault">Renault</option>
+                <option value="BMW">BMW</option>
+                <option value="Honda">Honda</option>
+                <option value="Ford">Ford</option>
+              </select>
+            </div>
+            <div>
+              <label for="model">Model</label>
+              <select id="model"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="row-2">
+            <div>
+              <label for="year">Year</label>
+              <select id="year">
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021" selected>2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2017">2017</option>
+                <option value="2016">2016</option>
+                <option value="2015">2015</option>
+              </select>
+            </div>
+            <div>
+              <label for="mileage">Mileage (KM)</label>
+              <select id="mileage">
+                <option value="10000">10,000 KM</option>
+                <option value="30000">30,000 KM</option>
+                <option value="45000" selected>45,000 KM</option>
+                <option value="60000">60,000 KM</option>
+                <option value="80000">80,000 KM</option>
+                <option value="100000">100,000 KM</option>
+                <option value="150000">150,000 KM</option>
+                <option value="200000">200,000+ KM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="row-2">
+            <div>
+              <label for="fuel">Fuel Type</label>
+              <select id="fuel">
+                <option value="Petrol" selected>Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Electric">Electric</option>
+              </select>
+            </div>
+            <div>
+              <label for="transmission">Transmission</label>
+              <select id="transmission">
+                <option value="Automatic" selected>Automatic</option>
+                <option value="Manual">Manual</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="horsepower">Horsepower</label>
+          <select id="horsepower">
+            <option value="100">100 HP (Compact / Economy)</option>
+            <option value="150" selected>150 HP (Standard Sedan / SUV)</option>
+            <option value="200">200 HP (Mid-size SUV / Premium Sedan)</option>
+            <option value="250">250 HP (V6 / Turbo Sedan)</option>
+            <option value="300">300 HP (Sports / Performance)</option>
+            <option value="350">350 HP (High Performance)</option>
+            <option value="400">400+ HP (Luxury / Supercar)</option>
+          </select>
+        </div>
+
+        <button type="button" class="predict-btn" id="predictBtn" style="color: #fff;">Predict & Compare</button>
+        <div class="status-banner" id="statusBanner" role="alert"></div>
+      </form>
+
+      <div class="results-column">
+        <div class="comparison-banner" id="comparisonBanner"></div>
+
+        <!-- Actual Market Price Ticket -->
+        <div class="ticket actual-ticket" id="actualTicket">
+          <div class="ticket-top">
+            <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
+            <div class="price-header-row">
+              <div class="price-value actual" id="actualPriceValue">$0</div>
+              <div class="variance-badge exact" id="actualBadge">Actual</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Random Forest Ticket -->
+        <div class="ticket">
+          <div class="ticket-top">
+            <div class="price-label"><span>🌲 Random Forest Prediction</span></div>
+            <div class="price-header-row">
+              <div class="price-value" id="rfPriceValue">$0</div>
+              <div class="variance-badge" id="rfVarianceBadge">--</div>
+            </div>
+          </div>
+          <div class="ticket-body">
+            <div class="contrib-title">Random Forest Feature Impact</div>
+            <div id="rfContribList"></div>
+          </div>
+        </div>
+
+        <!-- XGBoost Ticket -->
+        <div class="ticket">
+          <div class="ticket-top">
+            <div class="price-label"><span>⚡ XGBoost Prediction</span></div>
+            <div class="price-header-row">
+              <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
+              <div class="variance-badge" id="xgbVarianceBadge">--</div>
+            </div>
+          </div>
+          <div class="ticket-body">
+            <div class="contrib-title">XGBoost Feature Impact</div>
+            <div id="xgbContribList"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Explanatory Section for Price Discrepancies -->
+    <div class="explanation-card">
+      <div class="explanation-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        Why Predictions Differ from the Actual Market Price
+      </div>
+      <div class="explanation-content">
+        <p><strong>1. Actual Market Price:</strong>
+          Represents the raw median price recorded in historical transaction data for this Make, Model, and Manufactured
+          Year. It acts as an unadjusted baseline reference.</p>
+        <p><strong>2. Random Forest Model Adjustment (Bagging):</strong> Random Forest constructs 100 parallel decision
+          trees. It averages continuous inputs (e.g., exact mileage wear, horsepower, transmission) to prevent
+          overfitting, resulting in a conservative and stable estimate.</p>
+        <p><strong>3. XGBoost Model Adjustment (Gradient Boosting):</strong> XGBoost sequentially builds decision trees
+          to minimize residual errors. It heavily penalizes wear factors (like high mileage) and rewards premium power
+          options, capturing complex non-linear price drops.</p>
+        <p><strong>4. Summary:</strong> The machine learning models adjust the static historical actual price up or down
+          based on your vehicle's specific combination of mileage, horsepower, transmission, and fuel type.</p>
+      </div>
+    </div>
+
+    <div class="footnote">
+      Backend Target: <code>POST /predict</code> · OpenAPI Documentation at <code>/docs</code>
+    </div>
+  </div>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    // Theme Management
+    function initTheme() {
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      updateThemeButton(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      updateThemeButton(newTheme);
+    }
+
+    function updateThemeButton(theme) {
+      const icon = el("themeIcon");
+      const label = el("themeLabel");
+      if (theme === "dark") {
+        icon.textContent = "☀️";
+        label.textContent = "Light Mode";
+      } else {
+        icon.textContent = "🌙";
+        label.textContent = "Dark Mode";
+      }
+    }
+
+    const API_ENDPOINTS = [
+      window.location.protocol.startsWith("http") ? `${window.location.origin}/predict` : null,
+      "http://127.0.0.1:8000/predict",
+      "http://localhost:8000/predict"
+    ].filter(Boolean);
+
+    const BRAND_MODELS = {
+      Toyota: ["Fortuner", "Hilux", "Camry"],
+      Hyundai: ["Creta", "i20", "Elantra"],
+      Maruti: ["Dzire", "Ertiga", "Swift"],
+      Mahindra: ["Scorpio", "Thar"],
+      Kia: ["Seltos"],
+      Tata: ["Nexon", "Harrier"],
+      Renault: ["Duster", "Kwid"],
+      BMW: ["3 Series", "5 Series"],
+      Honda: ["Civic", "City"],
+      Ford: ["Focus", "Mustang"]
+    };
+
+    const HORSEPOWER_LOOKUP = {
+      Toyota: { Fortuner: 200, Hilux: 204, Camry: 203 },
+      Hyundai: { Creta: 113, i20: 100, Elantra: 147 },
+      Maruti: { Dzire: 100, Ertiga: 103, Swift: 100 },
+      Mahindra: { Scorpio: 120, Thar: 130 },
+      Kia: { Seltos: 115 },
+      Tata: { Nexon: 118, Harrier: 168 },
+      Renault: { Duster: 150, Kwid: 67 },
+      BMW: { "3 Series": 255, "5 Series": 335 },
+      Honda: { Civic: 158, City: 119 },
+      Ford: { Focus: 160, Mustang: 310 }
+    };
+
+    function formatUSD(n) {
+      return "$" + Math.round(n).toLocaleString("en-US");
+    }
+
+    function updateModelDropdown() {
+      const make = el("make").value;
+      const modelSelect = el("model");
+      const availableModels = BRAND_MODELS[make] || ["Standard"];
+
+      modelSelect.innerHTML = "";
+      availableModels.forEach(mod => {
+        const opt = document.createElement("option");
+        opt.value = mod;
+        opt.textContent = mod;
+        modelSelect.appendChild(opt);
+      });
+
+      const newModel = availableModels[0];
+      const defaultHp = HORSEPOWER_LOOKUP[make]?.[newModel];
+      if (defaultHp) {
+        el("horsepower").value = defaultHp;
+      }
+    }
+
+    el("make").addEventListener("change", updateModelDropdown);
+    el("model").addEventListener("change", () => {
+      const make = el("make").value;
+      const model = el("model").value;
+      const defaultHp = HORSEPOWER_LOOKUP[make]?.[model];
+      if (defaultHp) {
+        el("horsepower").value = defaultHp;
+      }
     });
 
-    const newModel = availableModels[0];
-    const defaultHp = HORSEPOWER_LOOKUP[make]?.[newModel];
-    if (defaultHp) {
-      el("horsepower").value = defaultHp;
-    }
-  }
+    function renderContributions(items, listId) {
+      const list = el(listId);
+      list.innerHTML = "";
 
-  el("make").addEventListener("change", updateModelDropdown);
-  el("model").addEventListener("change", () => {
-    const make = el("make").value;
-    const model = el("model").value;
-    const defaultHp = HORSEPOWER_LOOKUP[make]?.[model];
-    if (defaultHp) {
-      el("horsepower").value = defaultHp;
-    }
-  });
+      const maxAbs = Math.max(...items.map(c => Math.abs(c.value)), 1);
 
-  function renderContributions(items, listId) {
-    const list = el(listId);
-    list.innerHTML = "";
+      items.forEach(c => {
+        const isZero = c.value === 0;
+        const pct = isZero ? 0 : Math.min(100, (Math.abs(c.value) / maxAbs) * 100);
+        const cls = isZero ? "neutral" : (c.value > 0 ? "pos" : "neg");
+        const valDisplay = isZero ? "$0" : (c.value > 0 ? "+" + formatUSD(c.value) : "-" + formatUSD(Math.abs(c.value)));
 
-    const maxAbs = Math.max(...items.map(c => Math.abs(c.value)), 1);
-
-    items.forEach(c => {
-      const isZero = c.value === 0;
-      const pct = isZero ? 0 : Math.min(100, (Math.abs(c.value) / maxAbs) * 100);
-      const cls = isZero ? "neutral" : (c.value > 0 ? "pos" : "neg");
-      const valDisplay = isZero ? "$0" : (c.value > 0 ? "+" + formatUSD(c.value) : "-" + formatUSD(Math.abs(c.value)));
-
-      const row = document.createElement("div");
-      row.className = "contrib-row";
-      row.innerHTML = `
+        const row = document.createElement("div");
+        row.className = "contrib-row";
+        row.innerHTML = `
         <div class="contrib-name">${c.name}</div>
         <div class="contrib-bar-track"><div class="contrib-bar ${cls}" style="width:${pct}%"></div></div>
         <div class="contrib-val">${valDisplay}</div>
       `;
-      list.appendChild(row);
-    });
-  }
+        list.appendChild(row);
+      });
+    }
 
-  function showStatus(message, isError = false) {
-    const banner = el("statusBanner");
-    banner.textContent = message;
-    banner.className = `status-banner ${isError ? "error" : "success"}`;
-    banner.style.display = "block";
-  }
+    function showStatus(message, isError = false) {
+      const banner = el("statusBanner");
+      banner.textContent = message;
+      banner.className = `status-banner ${isError ? "error" : "success"}`;
+      banner.style.display = "block";
+    }
 
-  function clearStatus() {
-    const banner = el("statusBanner");
-    banner.style.display = "none";
-    banner.className = "status-banner";
-  }
+    function clearStatus() {
+      const banner = el("statusBanner");
+      banner.style.display = "none";
+      banner.className = "status-banner";
+    }
 
-  function buildPayload(modelName) {
-    return {
-      make: el("make").value,
-      model: el("model").value,
-      year: parseInt(el("year").value, 10),
-      mileage: parseFloat(el("mileage").value) || 0,
-      fuel_type: el("fuel").value,
-      transmission: el("transmission").value,
-      horsepower: parseFloat(el("horsepower").value) || 0,
-      number_of_seats: 5,
-      number_of_doors: 4,
-      location: "Dubai",
-      car_type: "Sedan",
-      color: "White",
-      sale_status: "Used",
-      model_name: modelName
-    };
-  }
+    function buildPayload(modelName) {
+      return {
+        make: el("make").value,
+        model: el("model").value,
+        year: parseInt(el("year").value, 10),
+        mileage: parseFloat(el("mileage").value) || 0,
+        fuel_type: el("fuel").value,
+        transmission: el("transmission").value,
+        horsepower: parseFloat(el("horsepower").value) || 0,
+        number_of_seats: 5,
+        number_of_doors: 4,
+        location: "Dubai",
+        car_type: "Sedan",
+        color: "White",
+        sale_status: "Used",
+        model_name: modelName
+      };
+    }
 
-  async function sendPredictionRequest(payload) {
-    let lastError = null;
+    async function sendPredictionRequest(payload) {
+      let lastError = null;
 
-    for (const url of API_ENDPOINTS) {
+      for (const url of API_ENDPOINTS) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.detail || `Server returned ${response.status}`);
+          }
+
+          return await response.json();
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      throw lastError || new Error("Failed to reach prediction backend.");
+    }
+
+    async function handlePrediction() {
+      const btn = el("predictBtn");
+      const year = parseInt(el("year").value, 10);
+
+      if (isNaN(year) || year < 1990 || year > 2025) {
+        showStatus("Please enter a valid year.", true);
+        return;
+      }
+
+      clearStatus();
+      btn.disabled = true;
+      btn.textContent = "Calculating...";
+      el("comparisonBanner").style.display = "none";
+
       try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        const [rfData, xgbData] = await Promise.all([
+          sendPredictionRequest(buildPayload("random_forest")),
+          sendPredictionRequest(buildPayload("xgboost"))
+        ]);
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || `Server returned ${response.status}`);
+        const rfPrice = rfData.predicted_price ?? rfData.prediction;
+        const xgbPrice = xgbData.predicted_price ?? xgbData.prediction;
+        const actualBenchmarkPrice = rfData.actual_benchmark ?? xgbData.actual_benchmark ?? 8000;
+
+        el("actualPriceValue").textContent = formatUSD(actualBenchmarkPrice);
+        el("rfPriceValue").textContent = formatUSD(rfPrice);
+        el("xgbPriceValue").textContent = formatUSD(xgbPrice);
+
+        // Calculate Variances against Actual Dataset Price
+        const rfDiff = rfPrice - actualBenchmarkPrice;
+        const xgbDiff = xgbPrice - actualBenchmarkPrice;
+
+        const rfPct = ((rfDiff / actualBenchmarkPrice) * 100).toFixed(1);
+        const xgbPct = ((xgbDiff / actualBenchmarkPrice) * 100).toFixed(1);
+
+        // Render Variance Badges
+        el("rfVarianceBadge").textContent = `${rfDiff >= 0 ? '+' : ''}${formatUSD(rfDiff)} (${rfPct}%)`;
+        el("rfVarianceBadge").className = `variance-badge ${rfDiff >= 0 ? 'pos' : 'neg'}`;
+
+        el("xgbVarianceBadge").textContent = `${xgbDiff >= 0 ? '+' : ''}${formatUSD(xgbDiff)} (${xgbPct}%)`;
+        el("xgbVarianceBadge").className = `variance-badge ${xgbDiff >= 0 ? 'pos' : 'neg'}`;
+
+        if (Array.isArray(rfData.contributions) && rfData.contributions.length > 0) {
+          renderContributions(rfData.contributions, "rfContribList");
+        }
+        if (Array.isArray(xgbData.contributions) && xgbData.contributions.length > 0) {
+          renderContributions(xgbData.contributions, "xgbContribList");
         }
 
-        return await response.json();
-      } catch (err) {
-        lastError = err;
-      }
-    }
-    throw lastError || new Error("Failed to reach prediction backend.");
-  }
+        // Detailed Accuracy & Model Comparison Banner
+        const rfErr = Math.abs(rfDiff);
+        const xgbErr = Math.abs(xgbDiff);
+        const diffBetweenModels = Math.abs(rfPrice - xgbPrice);
 
-  async function handlePrediction() {
-    const btn = el("predictBtn");
-    const year = parseInt(el("year").value, 10);
+        let accuracySummary = "";
+        if (rfErr < xgbErr) {
+          const delta = xgbErr - rfErr;
+          accuracySummary = `🏆 <strong>Random Forest</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(rfPct)}% error vs ${Math.abs(xgbPct)}% error for XGBoost).`;
+        } else if (xgbErr < rfErr) {
+          const delta = rfErr - xgbErr;
+          accuracySummary = `🏆 <strong>XGBoost</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(xgbPct)}% error vs ${Math.abs(rfPct)}% error for Random Forest).`;
+        } else {
+          accuracySummary = `🤝 Both models have identical precision relative to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}).`;
+        }
 
-    if (isNaN(year) || year < 1990 || year > 2025) {
-      showStatus("Please enter a valid year.", true);
-      return;
-    }
-
-    clearStatus();
-    btn.disabled = true;
-    btn.textContent = "Calculating...";
-    el("comparisonBanner").style.display = "none";
-
-    try {
-      const [rfData, xgbData] = await Promise.all([
-        sendPredictionRequest(buildPayload("random_forest")),
-        sendPredictionRequest(buildPayload("xgboost"))
-      ]);
-
-      const rfPrice = rfData.predicted_price ?? rfData.prediction;
-      const xgbPrice = xgbData.predicted_price ?? xgbData.prediction;
-      const actualBenchmarkPrice = rfData.actual_benchmark ?? xgbData.actual_benchmark ?? 8000;
-
-      el("actualPriceValue").textContent = formatUSD(actualBenchmarkPrice);
-      el("rfPriceValue").textContent = formatUSD(rfPrice);
-      el("xgbPriceValue").textContent = formatUSD(xgbPrice);
-
-      // Calculate Variances against Actual Dataset Price
-      const rfDiff = rfPrice - actualBenchmarkPrice;
-      const xgbDiff = xgbPrice - actualBenchmarkPrice;
-
-      const rfPct = ((rfDiff / actualBenchmarkPrice) * 100).toFixed(1);
-      const xgbPct = ((xgbDiff / actualBenchmarkPrice) * 100).toFixed(1);
-
-      // Render Variance Badges
-      el("rfVarianceBadge").textContent = `${rfDiff >= 0 ? '+' : ''}${formatUSD(rfDiff)} (${rfPct}%)`;
-      el("rfVarianceBadge").className = `variance-badge ${rfDiff >= 0 ? 'pos' : 'neg'}`;
-
-      el("xgbVarianceBadge").textContent = `${xgbDiff >= 0 ? '+' : ''}${formatUSD(xgbDiff)} (${xgbPct}%)`;
-      el("xgbVarianceBadge").className = `variance-badge ${xgbDiff >= 0 ? 'pos' : 'neg'}`;
-
-      if (Array.isArray(rfData.contributions) && rfData.contributions.length > 0) {
-        renderContributions(rfData.contributions, "rfContribList");
-      }
-      if (Array.isArray(xgbData.contributions) && xgbData.contributions.length > 0) {
-        renderContributions(xgbData.contributions, "xgbContribList");
-      }
-
-      // Detailed Accuracy & Model Comparison Banner
-      const rfErr = Math.abs(rfDiff);
-      const xgbErr = Math.abs(xgbDiff);
-      const diffBetweenModels = Math.abs(rfPrice - xgbPrice);
-
-      let accuracySummary = "";
-      if (rfErr < xgbErr) {
-        const delta = xgbErr - rfErr;
-        accuracySummary = `🏆 <strong>Random Forest</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(rfPct)}% error vs ${Math.abs(xgbPct)}% error for XGBoost).`;
-      } else if (xgbErr < rfErr) {
-        const delta = rfErr - xgbErr;
-        accuracySummary = `🏆 <strong>XGBoost</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(xgbPct)}% error vs ${Math.abs(rfPct)}% error for Random Forest).`;
-      } else {
-        accuracySummary = `🤝 Both models have identical precision relative to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}).`;
-      }
-
-      const banner = el("comparisonBanner");
-      banner.style.display = "block";
-      banner.innerHTML = `
+        const banner = el("comparisonBanner");
+        banner.style.display = "block";
+        banner.innerHTML = `
         <div>${accuracySummary}</div>
         <div class="metric-line">
           Model Gap: Random Forest and XGBoost predictions differ by <strong>${formatUSD(diffBetweenModels)}</strong> on this valuation.
         </div>
       `;
 
-    } catch (err) {
-      console.warn("Prediction error:", err);
-      showStatus(`API Unavailable (${err.message}).`, true);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Predict & Compare";
+      } catch (err) {
+        console.warn("Prediction error:", err);
+        showStatus(`API Unavailable (${err.message}).`, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Predict & Compare";
+      }
     }
-  }
 
-  el("predictBtn").addEventListener("click", handlePrediction);
+    el("predictBtn").addEventListener("click", handlePrediction);
 
-  // Initialize Theme and Dropdowns
-  initTheme();
-  updateModelDropdown();
+    // Initialize Theme and Dropdowns
+    initTheme();
+    updateModelDropdown();
 
-  // Initialize with zeroed state
-  const INITIAL_CONTRIBUTIONS = [
-    { name: "Make & Model", value: 0 },
-    { name: "Manufactured Year", value: 0 },
-    { name: "Mileage Impact", value: 0 },
-    { name: "Fuel Type", value: 0 },
-    { name: "Transmission", value: 0 },
-    { name: "Engine Power", value: 0 }
-  ];
-  renderContributions(INITIAL_CONTRIBUTIONS, "rfContribList");
-  renderContributions(INITIAL_CONTRIBUTIONS, "xgbContribList");
+    // Initialize with zeroed state
+    const INITIAL_CONTRIBUTIONS = [
+      { name: "Make & Model", value: 0 },
+      { name: "Manufactured Year", value: 0 },
+      { name: "Mileage Impact", value: 0 },
+      { name: "Fuel Type", value: 0 },
+      { name: "Transmission", value: 0 },
+      { name: "Engine Power", value: 0 }
+    ];
+    renderContributions(INITIAL_CONTRIBUTIONS, "rfContribList");
+    renderContributions(INITIAL_CONTRIBUTIONS, "xgbContribList");
 
-</script>
+  </script>
 </body>
+
 </html>
