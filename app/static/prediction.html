@@ -1,0 +1,129 @@
+<div id="predictionTab" class="tab-content active">
+
+  <!-- Top Row: Banner & Actual Price -->
+  <div class="top-row-layout">
+    <div class="comparison-banner" id="comparisonBanner" style="display: none;"></div>
+
+    <div class="ticket actual-ticket" id="actualTicket">
+      <div class="ticket-top">
+        <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
+        <div class="price-header-row">
+          <div class="price-value actual" id="actualPriceValue">$0</div>
+          <div class="variance-badge exact" id="actualBadge">Actual Dataset Price</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Row: Models -->
+  <div class="middle-row-layout">
+    <!-- Random Forest Ticket -->
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="price-label"><span>🌲 Random Forest Prediction</span></div>
+        <div class="price-header-row">
+          <div class="price-value" id="rfPriceValue">$0</div>
+          <div class="variance-badge" id="rfVarianceBadge">--</div>
+        </div>
+      </div>
+      <div class="ticket-body">
+        <div class="contrib-title">Random Forest Feature Impact</div>
+        <div id="rfContribList"></div>
+      </div>
+    </div>
+
+    <!-- XGBoost Ticket -->
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="price-label"><span>⚡ XGBoost Prediction</span></div>
+        <div class="price-header-row">
+          <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
+          <div class="variance-badge" id="xgbVarianceBadge">--</div>
+        </div>
+      </div>
+      <div class="ticket-body">
+        <div class="contrib-title">XGBoost Feature Impact</div>
+        <div id="xgbContribList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Form Full Width -->
+  <div class="bottom-row-layout">
+    <form class="panel" id="predictionForm" onsubmit="event.preventDefault();" style="width: 100%; max-width: none;">
+      <div class="panel-label"><span class="dot"></span>Car Specifications</div>
+
+      <div class="form-grid-3">
+        <div class="field">
+          <label for="make">Manufacturer Name</label>
+          <select id="make">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="model">Car Name</label>
+          <select id="model">
+            <option value="">--</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="year">Manufactured Year</label>
+          <select id="year">
+            <option value="">--</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="carType">Car Type</label>
+          <select id="carType">
+            <option value="">--</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fuel">Fuel Type (Energy)</label>
+          <select id="fuel">
+            <option value="">--</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="transmission">Transmission (Gearbox)</label>
+          <select id="transmission">
+            <option value="">--</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+        <button type="button" class="predict-btn" id="predictBtn"
+          style="color: #fffbeb; width: auto; padding: 12px 30px; margin-top: 0;">Predict & Compare</button>
+      </div>
+      <div class="status-banner" id="statusBanner" role="alert"></div>
+    </form>
+  </div>
+
+  <!-- Explanation Card -->
+  <div class="explanation-card">
+    <div class="explanation-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+      Why Predictions Differ from the Actual Market Price
+    </div>
+    <div class="explanation-content">
+      <p><strong>1. Actual Market Price:</strong> The median of all matching records in
+        <code>used_car_sales.csv</code> filtered by all 6 features (Manufacturer, Car Name, Car Type, Year,
+        Fuel Type, Transmission).
+      </p>
+      <p><strong>2. Random Forest (Bagging):</strong> Averages 100 parallel decision trees trained on the same
+        6 features. Produces stable, conservative estimates that closely track the dataset median.</p>
+      <p><strong>3. XGBoost (Gradient Boosting):</strong> Sequentially builds trees to minimize residual errors.
+        Captures subtle non-linear patterns in the feature combinations, sometimes predicting slightly above
+        or below the dataset median.</p>
+      <p><strong>4. Summary:</strong> Both models are trained exclusively on the 6 features you select.
+        Differences arise from how each algorithm weighs feature interactions and handles the distribution of
+        prices within each feature combination.</p>
+    </div>
+  </div>
+
+</div>

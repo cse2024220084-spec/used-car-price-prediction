@@ -25,10 +25,15 @@ def main():
     
     # --------------------------
     # Train Random Forest
-    # --------------------------
-    print("\nTraining Random Forest Regressor...")
+    # Added regularization hyperparameters to prevent perfect memorization of the dataset.
+    # - max_depth: Restricts tree depth so it doesn't memorize every exact combination.
+    # - min_samples_split/leaf: Forces leaves to contain at least 30 cars, ensuring predictions are
+    #   generalized averages of similar cars, rather than the exact price of a single car.
     rf_model = RandomForestRegressor(
-        n_estimators=100, 
+        n_estimators=100,
+        max_depth=8,
+        min_samples_split=10,
+        min_samples_leaf=30,
         random_state=42, 
         n_jobs=-1
     )
@@ -52,12 +57,15 @@ def main():
 
     # --------------------------
     # Train XGBoost
-    # --------------------------
-    print("\nTraining XGBoost Regressor...")
+    # Added regularization hyperparameters to force generalization.
+    # - max_depth=4: Shallow trees to prevent overfitting.
+    # - min_child_weight=20: Requires a minimum number of samples in a leaf node, smoothing the 
+    #   predictions so it doesn't just act like a lookup table for the training data.
     xgb_model = XGBRegressor(
         n_estimators=100,
-        learning_rate=0.1,
-        max_depth=6,
+        learning_rate=0.05,
+        max_depth=4,
+        min_child_weight=20,
         random_state=42,
         n_jobs=-1
     )

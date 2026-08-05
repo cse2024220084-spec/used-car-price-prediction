@@ -1,0 +1,203 @@
+<div id="workflowTab" class="tab-content" style="padding: 20px;">
+
+  <div class="panel" style="margin-bottom: 20px;">
+    <div class="panel-label"><span class="dot"></span>AutoValuate AI: Project Overview</div>
+    <div class="step-content" style="box-shadow: none; border: none; margin-left: 0; padding: 10px 0;">
+      <p style="font-size: 16px; margin-bottom: 12px;">This document outlines the complete, step-by-step technical
+        workflow used to enhance the <strong>Used Car Price Prediction</strong> project.</p>
+      <p style="font-size: 16px;">The goal of this enhancement was to train and compare two separate machine learning
+        models (<strong>Random Forest</strong> and <strong>XGBoost</strong>) and integrate them into a modern, highly
+        interactive UI that explains its predictions using SHAP values.</p>
+    </div>
+  </div>
+
+  <div class="middle-row-layout">
+    <div class="panel">
+      <div class="panel-label"><span class="dot"></span>Why Compare Two Models?</div>
+      <div class="step-content" style="box-shadow: none; border: none; margin-left: 0; padding: 10px 0;">
+        <ol style="color: var(--text-dim); line-height: 1.6; padding-left: 20px; font-size: 14px;">
+          <li style="margin-bottom: 10px;"><strong>Benchmarking Performance & Accuracy</strong>: No single algorithm
+            guarantees optimal performance across all datasets. Evaluating Random Forest against XGBoost allows us to
+            compare regression metrics to identify which model better captures used car valuation dynamics.</li>
+          <li style="margin-bottom: 10px;"><strong>Stability vs. High Precision</strong>:<br>
+            - <strong>Random Forest</strong>: Averages many trees (bagging) to generate stable, conservative price
+            estimates that resist overfitting.<br>
+            - <strong>XGBoost</strong>: Builds trees sequentially (boosting) to capture intricate non-linear
+            relationships (e.g., steep depreciation curves), providing higher precision.</li>
+          <li><strong>Consensus & Decision Confidence</strong>: Displaying predictions from both models simultaneously
+            in the UI gives users greater confidence when both algorithms converge on a similar price.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label"><span class="dot"></span>The Philosophy: Generalization vs Overfitting</div>
+      <div class="step-content" style="box-shadow: none; border: none; margin-left: 0; padding: 10px 0;">
+        <p style="margin-bottom: 10px;">In machine learning, it is technically possible to achieve a <strong>0% error
+            rate</strong> on training data. However, this is known as <strong>Overfitting</strong> and is highly
+          undesirable. When a model is overfitted, it stops looking for patterns and simply memorizes the exact price of
+          every individual car in the dataset.</p>
+        <p style="margin-bottom: 10px;">A truly <strong>intelligent model</strong> must learn to
+          <strong>Generalize</strong> and output an estimated market value.
+        </p>
+        <p>To achieve this, we applied <strong>Regularization Hyperparameters</strong> (<code>max_depth</code>,
+          <code>min_samples_leaf</code>). This forces the model to look at a cluster of similar cars before making a
+          prediction, ensuring the final output is a smoothed, generalized market average!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom: 30px;">
+    <div class="panel-label"><span class="dot"></span>Key Differences Between Random Forest and XGBoost</div>
+    <div style="overflow-x: auto; margin-top: 15px;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; color: var(--text-dim);">
+        <thead>
+          <tr style="background: var(--surface-raised); color: var(--text);">
+            <th style="padding: 12px; border: 1px solid var(--border);">Comparison Feature</th>
+            <th style="padding: 12px; border: 1px solid var(--border);">Random Forest Regressor</th>
+            <th style="padding: 12px; border: 1px solid var(--border);">XGBoost Regressor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Ensemble Strategy</strong></td>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Bagging</strong>: Trains multiple
+              decision trees independently in parallel on bootstrap subsets of data.</td>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Gradient Boosting</strong>: Trains
+              decision trees sequentially, explicitly correcting residual errors.</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Prediction Combination</strong></td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Takes the unweighted average (mean) of all
+              individual decision tree outputs.</td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Calculates a weighted sum of all trees scaled by
+              a learning rate parameter.</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Variance & Bias</strong></td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Primary goal is to <strong>reduce
+                variance</strong> and prevent overfitting.</td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Reduces both <strong>bias and variance</strong>
+              simultaneously through optimization.</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border: 1px solid var(--border);"><strong>Regularization</strong></td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Relies on structural tree limits
+              (<code>max_depth</code>, <code>min_samples_split</code>).</td>
+            <td style="padding: 12px; border: 1px solid var(--border);">Includes built-in <strong>L1 and L2
+                regularization</strong> to penalize complex trees.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom: 30px;">
+    <div class="panel-label"><span class="dot"></span>Project Workflow Phases</div>
+
+    <div class="timeline">
+      <div class="timeline-step">
+        <div class="step-icon">1</div>
+        <div class="step-content">
+          <h3>Phase 1: Model Engineering & Training</h3>
+          <ul>
+            <li><strong>Pipeline Verification:</strong> Validated the <code>preprocess_data</code> function to ensure
+              proper categorical one-hot encoding and numerical scaling. Output: 61 features.</li>
+            <li><strong>Algorithm Selection:</strong> Chose Random Forest (for robust bagging) and XGBoost (for
+              high-precision boosting).</li>
+            <li><strong>Execution:</strong> <code>src/train.py</code> loads data, fits the preprocessor, trains models
+              concurrently, and persists them to <code>.joblib</code> files.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <div class="step-icon">2</div>
+        <div class="step-content">
+          <h3>Phase 2: Backend API Refactoring</h3>
+          <ul>
+            <li><strong>Static File Serving:</strong> Configured FastAPI to serve the frontend UI via
+              <code>StaticFiles</code> middleware.
+            </li>
+            <li><strong>Resolving Shape Mismatches:</strong> Fixed a bug where incoming data was artificially padded.
+              Now cleanly passes raw 61-feature numpy arrays to the models.</li>
+            <li><strong>Graceful Defaults:</strong> Automatically injects statistical medians for omitted fields to
+              safely handle simplified UI requests.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <div class="step-icon">3</div>
+        <div class="step-content">
+          <h3>Phase 3: Frontend UI Modernization</h3>
+          <ul>
+            <li><strong>Aesthetic Overhaul:</strong> Dynamic CSS theme tokens supporting Dark Mode and Light Mode with
+              <code>localStorage</code> memory.
+            </li>
+            <li><strong>Dual-Model Inference:</strong> Executes simultaneous API requests (<code>Promise.all</code>) for
+              RF and XGBoost.</li>
+            <li><strong>Backend-Driven Ground Truth:</strong> Automatically retrieves and displays the Actual Market
+              Price alongside the predictions, calculating live variance metrics.</li>
+            <li><strong>Form Optimization:</strong> Curated dropdowns and simplified fields for rapid user input.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <div class="step-icon">4</div>
+        <div class="step-content">
+          <h3>Phase 4: Final Execution</h3>
+          <ul>
+            <li><strong>Environment:</strong> Python virtual environment with <code>scikit-learn</code>,
+              <code>xgboost</code>, <code>fastapi</code>, <code>shap</code>.
+            </li>
+            <li><strong>Server Initialization:</strong> Launched ASGI server using Uvicorn
+              (<code>uvicorn app.main:app --reload</code>).</li>
+            <li><strong>Verification:</strong> Executed live predictions confirming distinct, mathematically sound
+              prices and SHAP contributions.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="middle-row-layout">
+    <div class="panel">
+      <div class="panel-label"><span class="dot"></span>Key Technologies Used</div>
+      <div class="step-content" style="box-shadow: none; border: none; margin-left: 0; padding: 10px 0;">
+        <ul style="color: var(--text-dim); line-height: 1.6; padding-left: 20px;">
+          <li><strong>Machine Learning</strong>: <code>scikit-learn</code>, <code>xgboost</code></li>
+          <li><strong>Model Explainability</strong>: <code>shap</code> (SHapley Additive exPlanations)</li>
+          <li><strong>Backend API</strong>: <code>FastAPI</code>, <code>Uvicorn</code>, <code>Pydantic</code></li>
+          <li><strong>Frontend</strong>: Vanilla HTML5, CSS3, JS (No frameworks)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label"><span class="dot"></span>Quick Start Guide</div>
+      <div class="step-content" style="box-shadow: none; border: none; margin-left: 0; padding: 10px 0;">
+        <ol style="color: var(--text-dim); line-height: 1.6; padding-left: 20px; font-size: 13px;">
+          <li>Clone repository
+            <code>git clone https://github.com/cse2024220084-spec/used-car-price-prediction.git</code> then
+            <code>cd used-car-price-prediction</code>
+          </li>
+          <li><code>python -m venv venv</code></li>
+          <li><code>venv\Scripts\activate</code></li>
+          <li><code>setup.bat</code> (Installs dependencies)</li>
+          <li><code>python src/train.py</code> (Retrain models)</li>
+          <li><code>uvicorn app.main:app --reload</code></li>
+          <li>Open <code>http://127.0.0.1:8000/app/static/index.html</code></li>
+          <li>
+            Live Demo <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">
+              Click Me 🚀</a>
+          </li>
+
+        </ol>
+      </div>
+    </div>
+  </div>
+
+</div>

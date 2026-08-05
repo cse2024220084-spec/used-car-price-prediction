@@ -24,6 +24,20 @@ Comparing multiple algorithm architectures is a standard best practice in machin
 | **Overfitting & Noise Sensitivity** | Highly resistant to overfitting; adding more trees does not cause overfitting. | Higher risk of overfitting if hyper-parameters (learning rate, depth, regularization) are untuned. |
 | **Regularization** | Relies on structural tree limits (`max_depth`, `min_samples_split`). | Includes built-in **L1 ($\alpha$) and L2 ($\lambda$) regularization** to penalize complex trees. |
 
+### The Philosophy of a "Good" Machine Learning Model: Generalization vs. Overfitting
+
+In machine learning, it is technically possible to achieve a **0% error rate** on training data (an MAE of $0.00). However, this is known as **Overfitting** and is highly undesirable. 
+
+When a model is overfitted, it stops looking for patterns and simply **memorizes** the exact price of every individual car in the dataset. If a 2018 Toyota Camry sold for exactly $15,432, an overfitted model will act as a lookup table and blindly output $15,432 without actually understanding *why*.
+
+A truly **intelligent machine learning model** must learn to **Generalize**. It should evaluate broader market trends based on features like age, brand, and transmission, and output an **estimated market value**.
+
+To achieve this in our project, we intentionally applied **Regularization Hyperparameters** during training:
+- **`max_depth`**: Prevents the decision trees from growing infinitely deep, stopping them from creating highly specific, pure leaf nodes for single cars.
+- **`min_samples_leaf` & `min_child_weight`**: Forces the model to look at a cluster of at least 20 to 30 similar cars before making a prediction, ensuring the final output is a smoothed, generalized market average rather than the memorized price of one specific past sale.
+
+By introducing these constraints, the model's error naturally rises (e.g., ~$30), which proves the model is no longer "cheating" by memorizing the data, but is instead thinking intelligently and predicting a true generalized market value!
+
 ---
 
 ## Phase 1: Model Engineering & Training (`src/train.py`)
