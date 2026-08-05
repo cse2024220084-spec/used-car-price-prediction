@@ -13,35 +13,49 @@
 </head>
 
 <body>
-  <div class="wrap">
-    <header>
-      <div class="header-content">
-        <div class="eyebrow">Used Car Price Prediction</div>
-        <h1>Resale Price Calculator & Model Comparison</h1>
-        <p>Compare Random Forest vs XGBoost predictions against Actual Market Price from the dataset.</p>
-      </div>
-      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
-        <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
+  <nav class="sticky-nav">
+    <div class="nav-content">
+      <!-- Hamburger (Mobile Only) -->
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
 
-      <div class="notice">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. All dropdown options are
-          loaded dynamically from the dataset via <code>GET /feature-names</code>. The Actual Market Price is the
-          median of matching records in the dataset.</div>
+      <div class="nav-left desktop-logo">
+        <img src="https://www.ppiu.edu.kh/public/images/logo/khlogo.png" alt="PPIU Logo" style="height: 40px; object-fit: contain;">
       </div>
-    </header>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="loadTab('prediction')" id="btn-prediction">Prediction & Compare</button>
-      <button class="tab-btn" onclick="loadTab('dataset')" id="btn-dataset">Dataset View</button>
-      <button class="tab-btn" onclick="loadTab('workflow')" id="btn-workflow">Prediction Workflow</button>
+      <div class="nav-center tabs desktop-tabs">
+        <button class="tab-btn" onclick="loadTab('overview')" id="btn-overview">Project Overview</button>
+        <button class="tab-btn active" onclick="loadTab('prediction')" id="btn-prediction">Prediction & Compare</button>
+        <button class="tab-btn" onclick="loadTab('dataset')" id="btn-dataset">Dataset View</button>
+        <button class="tab-btn" onclick="loadTab('workflow')" id="btn-workflow">Prediction Workflow</button>
+      </div>
+      <div class="nav-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" style="margin: 0; box-shadow: none;">
+          <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
+        </button>
+      </div>
     </div>
+  </nav>
 
+  <!-- Mobile Menu Overlay -->
+  <div id="mobileMenuOverlay" class="mobile-menu-overlay">
+    <div class="mobile-menu-header">
+      <img src="https://www.ppiu.edu.kh/public/images/logo/khlogo.png" alt="PPIU Logo" style="height: 40px; object-fit: contain;">
+      <button class="mobile-close-btn" onclick="toggleMobileMenu()" aria-label="Close Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="mobile-menu-tabs tabs">
+      <button class="tab-btn" onclick="loadTab('overview'); toggleMobileMenu();" id="mobile-btn-overview">Project Overview</button>
+      <button class="tab-btn active" onclick="loadTab('prediction'); toggleMobileMenu();" id="mobile-btn-prediction">Prediction & Compare</button>
+      <button class="tab-btn" onclick="loadTab('dataset'); toggleMobileMenu();" id="mobile-btn-dataset">Dataset View</button>
+      <button class="tab-btn" onclick="loadTab('workflow'); toggleMobileMenu();" id="mobile-btn-workflow">Prediction Workflow</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <div id="overview-container" class="tab-container" style="display: none;"></div>
     <div id="prediction-container" class="tab-container"></div>
     <div id="dataset-container" class="tab-container" style="display: none;"></div>
     <div id="workflow-container" class="tab-container" style="display: none;"></div>

@@ -11,7 +11,9 @@ async function loadTab(tabId) {
   // Update button active states
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = el('btn-' + tabId);
+  const mobileActiveBtn = el('mobile-btn-' + tabId);
   if (activeBtn) activeBtn.classList.add('active');
+  if (mobileActiveBtn) mobileActiveBtn.classList.add('active');
 
   // Hide all tab containers
   document.querySelectorAll('.tab-container').forEach(container => {
@@ -58,6 +60,18 @@ function toggleTheme() {
   document.documentElement.setAttribute("data-theme", newTheme);
   localStorage.setItem("theme", newTheme);
   updateThemeButton(newTheme);
+}
+
+function toggleMobileMenu() {
+  const overlay = el('mobileMenuOverlay');
+  if (!overlay) return;
+  if (overlay.classList.contains('active')) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  } else {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 }
 
 function updateThemeButton(theme) {
