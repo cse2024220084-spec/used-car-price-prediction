@@ -1,4 +1,77 @@
-# 🚗⚡ AutoValuate AI: Used Car Price Prediction Workflow
+
+
+---
+
+## Quick Start Guide & Backend Flow
+
+Follow this complete step-by-step flow from repository setup to running the backend server and accessing the application:
+
+### Step 1: Clone the Repository
+Clone the project repository to your local machine and navigate into the project root directory:
+```bash
+git clone https://github.com/cse2024220084-spec/used-car-price-prediction.git
+cd used-car-price-prediction
+```
+
+### Step 2: Create a Python Virtual Environment
+Create an isolated Python virtual environment to manage project packages:
+```bash
+python -m venv venv
+```
+
+### Step 3: Activate the Virtual Environment
+Activate the virtual environment depending on your operating system:
+- **Windows (CMD / PowerShell)**:
+  ```cmd
+  venv\Scripts\activate
+  ```
+- **Linux / macOS (Bash / Zsh)**:
+  ```bash
+  source venv/bin/activate
+  ```
+
+### Step 4: Install All Dependencies (Automated Script or Manual)
+Instead of installing Python packages manually one by one, use one of the automated setup scripts to install all dependencies from `requirements.txt` in a single step:
+
+- **Option A: Automated Script (Recommended)**
+  - **Windows**: Run `setup.bat` in CMD / PowerShell:
+    ```cmd
+    setup.bat
+    ```
+  - **Linux / macOS / Git Bash**: Run `setup.sh`:
+    ```bash
+    bash setup.sh
+    ```
+  - **Cross-Platform Python Script**: Run `install_dependencies.py`:
+    ```bash
+    python install_dependencies.py
+    ```
+
+- **Option B: Manual Installation via pip**
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+### Step 5: (Optional) Retrain Machine Learning Models
+Pre-trained models (`random_forest.joblib` and `xgboost.joblib`) are already included in the `models/` directory. If you wish to retrain the models from the raw dataset (`data/raw/used_car_sales.csv`), run:
+```bash
+python src/train.py
+```
+
+### Step 6: Start the Backend FastAPI Server
+Launch the Uvicorn ASGI server to expose the backend API:
+```bash
+uvicorn app.main:app --reload
+```
+---
+
+### Step 7: Access the Application & API Documentation
+Open your web browser to access:
+- **Frontend UI Application**: [http://127.0.0.1:8000/app/static/index.html](http://127.0.0.1:8000/app/static/index.html)
+- **Backend API Interactive Docs (Swagger UI)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Live Demo**: <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">Click Me 🚀</a>
+
+## 🚗⚡ AutoValuate AI: Used Car Price Prediction Workflow
 This document outlines the complete, step-by-step technical workflow used to enhance the **Used Car Price Prediction** project. 
 
 The goal of this enhancement was to train and compare two separate machine learning models (**Random Forest** and **XGBoost**) and integrate them into a modern, highly interactive UI that explains its predictions using SHAP values.
@@ -93,75 +166,4 @@ By introducing these constraints, the model's error naturally rises (e.g., ~$30)
 - **Model Explainability**: `shap` (SHapley Additive exPlanations)
 - **Backend API**: `FastAPI`, `Uvicorn`, `Pydantic`
 - **Frontend**: Vanilla HTML5, CSS3, and JavaScript (No external frameworks for maximum speed and simplicity)
-
----
-
-## Quick Start Guide & Backend Flow
-
-Follow this complete step-by-step flow from repository setup to running the backend server and accessing the application:
-
-### Step 1: Clone the Repository
-Clone the project repository to your local machine and navigate into the project root directory:
-```bash
-git clone https://github.com/cse2024220084-spec/used-car-price-prediction.git
-cd used-car-price-prediction
-```
-
-### Step 2: Create a Python Virtual Environment
-Create an isolated Python virtual environment to manage project packages:
-```bash
-python -m venv venv
-```
-
-### Step 3: Activate the Virtual Environment
-Activate the virtual environment depending on your operating system:
-- **Windows (CMD / PowerShell)**:
-  ```cmd
-  venv\Scripts\activate
-  ```
-- **Linux / macOS (Bash / Zsh)**:
-  ```bash
-  source venv/bin/activate
-  ```
-
-### Step 4: Install All Dependencies (Automated Script or Manual)
-Instead of installing Python packages manually one by one, use one of the automated setup scripts to install all dependencies from `requirements.txt` in a single step:
-
-- **Option A: Automated Script (Recommended)**
-  - **Windows**: Run `setup.bat` in CMD / PowerShell:
-    ```cmd
-    setup.bat
-    ```
-  - **Linux / macOS / Git Bash**: Run `setup.sh`:
-    ```bash
-    bash setup.sh
-    ```
-  - **Cross-Platform Python Script**: Run `install_dependencies.py`:
-    ```bash
-    python install_dependencies.py
-    ```
-
-- **Option B: Manual Installation via pip**
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-### Step 5: (Optional) Retrain Machine Learning Models
-Pre-trained models (`random_forest.joblib` and `xgboost.joblib`) are already included in the `models/` directory. If you wish to retrain the models from the raw dataset (`data/raw/used_car_sales.csv`), run:
-```bash
-python src/train.py
-```
-
-### Step 6: Start the Backend FastAPI Server
-Launch the Uvicorn ASGI server to expose the backend API:
-```bash
-uvicorn app.main:app --reload
-```
-
-### Step 7: Access the Application & API Documentation
-Open your web browser to access:
-- **Frontend UI Application**: [http://127.0.0.1:8000/app/static/index.html](http://127.0.0.1:8000/app/static/index.html)
-- **Backend API Interactive Docs (Swagger UI)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **Live Demo**: <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">Click Me 🚀</a>
-
 ---
