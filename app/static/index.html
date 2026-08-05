@@ -521,7 +521,8 @@
           <line x1="12" y1="8" x2="12" y2="12" />
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
-        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will return the
+        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will fetch and
+          return the
           Actual Market Price alongside predictions from both machine learning models.</div>
       </div>
     </header>
@@ -542,9 +543,7 @@
                 <option value="Kia">Kia</option>
                 <option value="Tata">Tata</option>
                 <option value="Renault">Renault</option>
-                <option value="BMW">BMW</option>
-                <option value="Honda">Honda</option>
-                <option value="Ford">Ford</option>
+                <option value="Prazo">Prazo</option>
               </select>
             </div>
             <div>
@@ -621,7 +620,7 @@
           </select>
         </div>
 
-        <button type="button" class="predict-btn" id="predictBtn" style="color: #fff;">Predict & Compare</button>
+        <button type="button" class="predict-btn" id="predictBtn" style="color: #fffbeb;">Predict & Compare</button>
         <div class="status-banner" id="statusBanner" role="alert"></div>
       </form>
 
@@ -631,10 +630,10 @@
         <!-- Actual Market Price Ticket -->
         <div class="ticket actual-ticket" id="actualTicket">
           <div class="ticket-top">
-            <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
+            <div class="price-label"><span>🎯 Actual Market Price (Backend Ground Truth)</span></div>
             <div class="price-header-row">
               <div class="price-value actual" id="actualPriceValue">$0</div>
-              <div class="variance-badge exact" id="actualBadge">Actual</div>
+              <div class="variance-badge exact" id="actualBadge">Dataset Actual</div>
             </div>
           </div>
         </div>
@@ -683,9 +682,8 @@
         Why Predictions Differ from the Actual Market Price
       </div>
       <div class="explanation-content">
-        <p><strong>1. Actual Market Price:</strong>
-          Represents the raw median price recorded in historical transaction data for this Make, Model, and Manufactured
-          Year. It acts as an unadjusted baseline reference.</p>
+        <p><strong>1. Actual Market Price:</strong> Represents the raw median price recorded in historical transaction
+          data for this specific Make, Model, and Manufactured Year returned directly by the backend API.</p>
         <p><strong>2. Random Forest Model Adjustment (Bagging):</strong> Random Forest constructs 100 parallel decision
           trees. It averages continuous inputs (e.g., exact mileage wear, horsepower, transmission) to prevent
           overfitting, resulting in a conservative and stable estimate.</p>
@@ -739,29 +737,25 @@
     ].filter(Boolean);
 
     const BRAND_MODELS = {
-      Toyota: ["Fortuner", "Hilux", "Camry"],
-      Hyundai: ["Creta", "i20", "Elantra"],
+      Toyota: ["Fortuner", "Hilux"],
+      Hyundai: ["Creta", "i20"],
       Maruti: ["Dzire", "Ertiga", "Swift"],
       Mahindra: ["Scorpio", "Thar"],
       Kia: ["Seltos"],
-      Tata: ["Nexon", "Harrier"],
-      Renault: ["Duster", "Kwid"],
-      BMW: ["3 Series", "5 Series"],
-      Honda: ["Civic", "City"],
-      Ford: ["Focus", "Mustang"]
+      Tata: ["Yodha"],
+      Renault: ["Kags"],
+      Prazo: ["Plato"]
     };
 
     const HORSEPOWER_LOOKUP = {
-      Toyota: { Fortuner: 200, Hilux: 204, Camry: 203 },
-      Hyundai: { Creta: 113, i20: 100, Elantra: 147 },
+      Toyota: { Fortuner: 200, Hilux: 204 },
+      Hyundai: { Creta: 113, i20: 100 },
       Maruti: { Dzire: 100, Ertiga: 103, Swift: 100 },
       Mahindra: { Scorpio: 120, Thar: 130 },
       Kia: { Seltos: 115 },
-      Tata: { Nexon: 118, Harrier: 168 },
-      Renault: { Duster: 150, Kwid: 67 },
-      BMW: { "3 Series": 255, "5 Series": 335 },
-      Honda: { Civic: 158, City: 119 },
-      Ford: { Focus: 160, Mustang: 310 }
+      Tata: { Yodha: 140 },
+      Renault: { Kags: 150 },
+      Prazo: { Plato: 180 }
     };
 
     function formatUSD(n) {
@@ -813,10 +807,10 @@
         const row = document.createElement("div");
         row.className = "contrib-row";
         row.innerHTML = `
-        <div class="contrib-name">${c.name}</div>
-        <div class="contrib-bar-track"><div class="contrib-bar ${cls}" style="width:${pct}%"></div></div>
-        <div class="contrib-val">${valDisplay}</div>
-      `;
+          <div class="contrib-name">${c.name}</div>
+          <div class="contrib-bar-track"><div class="contrib-bar ${cls}" style="width:${pct}%"></div></div>
+          <div class="contrib-val">${valDisplay}</div>
+        `;
         list.appendChild(row);
       });
     }
@@ -899,7 +893,7 @@
 
         const rfPrice = rfData.predicted_price ?? rfData.prediction;
         const xgbPrice = xgbData.predicted_price ?? xgbData.prediction;
-        const actualBenchmarkPrice = rfData.actual_benchmark ?? xgbData.actual_benchmark ?? 8000;
+        const actualBenchmarkPrice = rfData.actual_benchmark ?? xgbData.actual_benchmark;
 
         el("actualPriceValue").textContent = formatUSD(actualBenchmarkPrice);
         el("rfPriceValue").textContent = formatUSD(rfPrice);
@@ -945,11 +939,11 @@
         const banner = el("comparisonBanner");
         banner.style.display = "block";
         banner.innerHTML = `
-        <div>${accuracySummary}</div>
-        <div class="metric-line">
-          Model Gap: Random Forest and XGBoost predictions differ by <strong>${formatUSD(diffBetweenModels)}</strong> on this valuation.
-        </div>
-      `;
+          <div>${accuracySummary}</div>
+          <div class="metric-line">
+            Model Gap: Random Forest and XGBoost predictions differ by <strong>${formatUSD(diffBetweenModels)}</strong> on this valuation.
+          </div>
+        `;
 
       } catch (err) {
         console.warn("Prediction error:", err);

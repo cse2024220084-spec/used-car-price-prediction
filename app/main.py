@@ -210,6 +210,7 @@ def get_preprocessors() -> Dict[str, Any]:
         "sale_status": str(normalized_df["sale_status"].mode().iat[0]) if "sale_status" in normalized_df else "Used",
         "transmission": "Automatic",
         "fuel_type": "Petrol",
+        "price": float(normalized_df["price"].median()) if "price" in normalized_df else 7900.0,
     }
 
     group_cols = ["horsepower", "number_of_seats", "number_of_doors", "price"]
@@ -391,7 +392,7 @@ def predict(car: CarFeatures):
             benchmark_val = _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "price")
         if benchmark_val is None:
             benchmark_val = _pick_default(artifacts["brand_defaults"], ["brand"], [car.make], "price")
-        actual_benchmark_price = float(benchmark_val) if benchmark_val is not None else 8000.0
+        actual_benchmark_price = float(benchmark_val) if benchmark_val is not None else float(artifacts["defaults"].get("price", 7900.0))
 
     except Exception as e:
         raise HTTPException(
