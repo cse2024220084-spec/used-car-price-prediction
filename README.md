@@ -48,19 +48,20 @@ Comparing multiple algorithm architectures is a standard best practice in machin
 
 ## Phase 3: Frontend UI Modernization (`app/static/index.html`)
 
-1. **Aesthetic Overhaul**: Completely redesigned the UI using a sleek, premium dark-mode aesthetic with interactive hover states, responsive CSS grids, and smooth micro-animations. 
-2. **Dual-Model Inference**: Rewrote the javascript payload handler (`handlePrediction`) to execute two simultaneous asynchronous API requests (`Promise.all`)—one targeting Random Forest and one targeting XGBoost.
-3. **SHAP Feature Visualization**: Engineered dynamic HTML progress bars (`.contrib-bar`) to visually explain the SHAP (SHapley Additive exPlanations) values returned by the backend. This allows users to easily see which features positively (`+`) or negatively (`-`) impacted the base price of the car.
-4. **Form Optimization (UX Improvements)**:
-   * **Decluttering**: Stripped out low-impact fields that only cluttered the UI (Seats, Doors, Location, Color, Car Type).
-   * **Curated Dropdowns**: Replaced raw number inputs for **Year**, **Horsepower**, and **Mileage** with curated `<select>` dropdowns featuring real-world suggestions (e.g., *150,000 KM (Very High Mileage)*) to guide the user and prevent validation errors.
-5. **Feature Explainability Detail**: Integrated clear, human-readable labels for the mathematical features that most heavily impact a car's price:
-   * **Make & Model**: The base brand and specific model tier, which dictate the car's initial MSRP and general depreciation curve.
-   * **Manufactured Year**: Represents the age of the vehicle. Newer cars hold a strong positive price impact due to less aging and modern technology.
-   * **Mileage Impact**: Quantifies the wear-and-tear on the car. High mileage severely drops the predicted price below the average baseline.
-   * **Fuel Type**: Highlights market demand differences between Petrol, Diesel, Hybrid, and Electric engines.
-   * **Transmission**: Represents whether the car is Automatic or Manual, with automatics generally commanding a higher resale value in modern markets.
-   * **Engine Power**: The horsepower output. Higher engine power typically correlates with luxury or sports packages, significantly boosting the resale price.
+1. **Aesthetic & Theme Overhaul (Dark / Light Mode)**: Redesigned the UI with dynamic CSS theme tokens supporting seamless toggling between **Dark Mode** and **Light Mode** (with persistent `localStorage` memory).
+2. **Dual-Model Inference & Accuracy Benchmarking**: Rewrote the JavaScript payload handler (`handlePrediction`) to execute simultaneous API requests (`Promise.all`) for Random Forest and XGBoost.
+3. **Backend-Driven Actual Price & Variance Evaluation**: Automatically retrieves the **Actual Market Price (Dataset Ground Truth)** from the backend API response (`actual_benchmark`). The UI displays the actual benchmark ticket alongside both Random Forest and XGBoost predictions, calculating live variance metrics (`+$ / -$` and `% error`) and highlighting which model is closer to the ground truth.
+4. **Interactive Explanation Card**: Built a dedicated explanatory section on the UI detailing why the actual dataset price differs from the machine learning model predictions (explaining static historical median vs. dynamic feature adjustments from Random Forest bagging and XGBoost gradient boosting).
+5. **Form Optimization (UX Improvements)**:
+   * **Decluttering**: Simplified low-impact fields for faster user input.
+   * **Curated Dropdowns**: Replaced raw numeric inputs for **Year**, **Horsepower**, and **Mileage** with curated `<select>` dropdowns to prevent invalid input.
+6. **Feature Explainability Detail**: Integrated clear, human-readable labels for the mathematical features that most heavily impact a car's price:
+   * **Make & Model**: Dictates initial MSRP and depreciation curve.
+   * **Manufactured Year**: Represents vehicle age and tech generation.
+   * **Mileage Impact**: Quantifies wear-and-tear.
+   * **Fuel Type**: Reflects market demand differences (Petrol, Diesel, Hybrid, Electric).
+   * **Transmission**: Automatic vs. Manual resale premium.
+   * **Engine Power**: Horsepower output correlating with luxury/performance tiers.
 
 ---
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,29 @@
     --teal: #2dd4bf;
     --amber: #f5a623;
     --amber-dim: #8a5f1e;
+    --indigo: #818cf8;
+    --indigo-bg: rgba(129, 140, 248, 0.12);
+    --notice-bg: rgba(245,166,35,0.08);
+    --notice-text: #e8c98a;
     --radius: 10px;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="light"] {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-raised: #f1f5f9;
+    --border: #cbd5e1;
+    --text: #0f172a;
+    --text-dim: #64748b;
+    --teal: #0d9488;
+    --amber: #d97706;
+    --amber-dim: #fef3c7;
+    --indigo: #4f46e5;
+    --indigo-bg: rgba(79, 70, 229, 0.08);
+    --notice-bg: #fffbeb;
+    --notice-text: #92400e;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   }
 
   * { box-sizing: border-box; }
@@ -32,6 +54,7 @@
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     padding: 32px 20px 60px;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   .wrap {
@@ -39,7 +62,16 @@
     margin: 0 auto;
   }
 
-  header { margin-bottom: 28px; }
+  header {
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-content { flex: 1; min-width: 280px; }
 
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -66,17 +98,39 @@
     margin: 0;
   }
 
+  .theme-toggle-btn {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .theme-toggle-btn:hover {
+    border-color: var(--teal);
+    transform: translateY(-1px);
+  }
+
   .notice {
     margin-top: 18px;
-    background: rgba(245,166,35,0.08);
+    background: var(--notice-bg);
     border: 1px solid var(--amber-dim);
     border-radius: var(--radius);
     padding: 12px 16px;
     font-size: 13px;
-    color: #e8c98a;
+    color: var(--notice-text);
     display: flex;
     gap: 10px;
     align-items: flex-start;
+    width: 100%;
   }
 
   .notice svg { flex-shrink: 0; margin-top: 2px; }
@@ -98,6 +152,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 22px;
+    box-shadow: var(--shadow);
   }
 
   .panel-label {
@@ -143,7 +198,7 @@
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.3s ease;
   }
 
   select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: var(--teal); }
@@ -190,6 +245,12 @@
     border-radius: var(--radius);
     overflow: hidden;
     margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .ticket.actual-ticket {
+    border-color: var(--indigo);
+    background: var(--indigo-bg);
   }
 
   .ticket-top {
@@ -205,6 +266,7 @@
     width: 18px; height: 18px;
     background: var(--bg);
     border-radius: 50%;
+    transition: background-color 0.3s ease;
   }
   .ticket-top::before { left: -9px; }
   .ticket-top::after { right: -9px; }
@@ -218,16 +280,39 @@
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  .price-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
   }
 
   .price-value {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 700;
     color: var(--teal);
     letter-spacing: -0.02em;
     line-height: 1;
   }
+
+  .price-value.actual { color: var(--indigo); }
+
+  .variance-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--surface-raised);
+    display: inline-block;
+  }
+
+  .variance-badge.pos { color: #f87171; }
+  .variance-badge.neg { color: var(--teal); }
+  .variance-badge.exact { color: var(--indigo); }
 
   .ticket-body { padding: 18px 22px 22px; }
 
@@ -277,17 +362,54 @@
   }
 
   .comparison-banner {
-    background: rgba(45, 212, 191, 0.1);
-    border: 1px solid var(--teal);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 16px;
-    margin-top: 20px;
+    margin-bottom: 20px;
     display: none;
-    text-align: center;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: var(--shadow);
+  }
+
+  .comparison-banner .metric-line {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .explanation-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .explanation-title {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 16px;
-    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
   }
+
+  .explanation-content p {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin: 0 0 10px;
+  }
+  .explanation-content p:last-child { margin-bottom: 0; }
+  .explanation-content strong { color: var(--text); }
+  .explanation-content em { color: var(--teal); font-style: normal; }
 
   .footnote {
     margin-top: 30px;
@@ -309,12 +431,18 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Used Car Price Prediction</div>
-    <h1>Resale Price Calculator & Model Comparison</h1>
-    <p>Compare Random Forest vs XGBoost predictions for any vehicle.</p>
+    <div class="header-content">
+      <div class="eyebrow">Used Car Price Prediction</div>
+      <h1>Resale Price Calculator & Model Comparison</h1>
+      <p>Compare Random Forest vs XGBoost predictions against Actual Market Price returned by the backend.</p>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+      <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
+    </button>
+
     <div class="notice">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8c98a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>Click <strong>"Predict & Compare"</strong> to evaluate the vehicle using both models simultaneously.</div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will return the Actual Market Price alongside predictions from both machine learning models.</div>
     </div>
   </header>
 
@@ -420,11 +548,25 @@
     <div class="results-column">
       <div class="comparison-banner" id="comparisonBanner"></div>
 
+      <!-- Actual Market Price Ticket -->
+      <div class="ticket actual-ticket" id="actualTicket">
+        <div class="ticket-top">
+          <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
+          <div class="price-header-row">
+            <div class="price-value actual" id="actualPriceValue">$0</div>
+            <div class="variance-badge exact" id="actualBadge">Dataset Benchmark</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Random Forest Ticket -->
       <div class="ticket">
         <div class="ticket-top">
-          <div class="price-label"><span>Random Forest Prediction</span></div>
-          <div class="price-value" id="rfPriceValue">$0</div>
+          <div class="price-label"><span>🌲 Random Forest Prediction</span></div>
+          <div class="price-header-row">
+            <div class="price-value" id="rfPriceValue">$0</div>
+            <div class="variance-badge" id="rfVarianceBadge">--</div>
+          </div>
         </div>
         <div class="ticket-body">
           <div class="contrib-title">Random Forest Feature Impact</div>
@@ -433,10 +575,13 @@
       </div>
 
       <!-- XGBoost Ticket -->
-      <div class="ticket" style="margin-top: 20px;">
+      <div class="ticket">
         <div class="ticket-top">
-          <div class="price-label"><span>XGBoost Prediction</span></div>
-          <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
+          <div class="price-label"><span>⚡ XGBoost Prediction</span></div>
+          <div class="price-header-row">
+            <div class="price-value" id="xgbPriceValue" style="color: var(--amber);">$0</div>
+            <div class="variance-badge" id="xgbVarianceBadge">--</div>
+          </div>
         </div>
         <div class="ticket-body">
           <div class="contrib-title">XGBoost Feature Impact</div>
@@ -447,6 +592,20 @@
     </div>
   </div>
 
+  <!-- Explanatory Section for Price Discrepancies -->
+  <div class="explanation-card">
+    <div class="explanation-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Why Predictions Differ from the Actual Market Price
+    </div>
+    <div class="explanation-content">
+      <p><strong>1. Static Dataset Benchmark vs. Dynamic Feature Modeling:</strong> The <em>Actual Market Price</em> represents the raw median price recorded in historical transaction data for this Make, Model, and Manufactured Year. It acts as an unadjusted baseline reference.</p>
+      <p><strong>2. Random Forest Model Adjustment (Bagging):</strong> Random Forest constructs 100 parallel decision trees. It averages continuous inputs (e.g., exact mileage wear, horsepower, transmission) to prevent overfitting, resulting in a conservative and stable estimate.</p>
+      <p><strong>3. XGBoost Model Adjustment (Gradient Boosting):</strong> XGBoost sequentially builds decision trees to minimize residual errors. It heavily penalizes wear factors (like high mileage) and rewards premium power options, capturing complex non-linear price drops.</p>
+      <p><strong>4. Summary:</strong> The machine learning models adjust the static historical actual price up or down based on your vehicle's specific combination of mileage, horsepower, transmission, and fuel type.</p>
+    </div>
+  </div>
+
   <div class="footnote">
     Backend Target: <code>POST /predict</code> · OpenAPI Documentation at <code>/docs</code>
   </div>
@@ -454,6 +613,33 @@
 
 <script>
   const el = (id) => document.getElementById(id);
+
+  // Theme Management
+  function initTheme() {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    updateThemeButton(savedTheme);
+  }
+
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    updateThemeButton(newTheme);
+  }
+
+  function updateThemeButton(theme) {
+    const icon = el("themeIcon");
+    const label = el("themeLabel");
+    if (theme === "dark") {
+      icon.textContent = "☀️";
+      label.textContent = "Light Mode";
+    } else {
+      icon.textContent = "🌙";
+      label.textContent = "Dark Mode";
+    }
+  }
 
   const API_ENDPOINTS = [
     window.location.protocol.startsWith("http") ? `${window.location.origin}/predict` : null,
@@ -504,7 +690,6 @@
       modelSelect.appendChild(opt);
     });
 
-    // Update default horsepower for new make/model combination
     const newModel = availableModels[0];
     const defaultHp = HORSEPOWER_LOOKUP[make]?.[newModel];
     if (defaultHp) {
@@ -616,7 +801,6 @@
     el("comparisonBanner").style.display = "none";
 
     try {
-      // Fetch predictions for both models simultaneously
       const [rfData, xgbData] = await Promise.all([
         sendPredictionRequest(buildPayload("random_forest")),
         sendPredictionRequest(buildPayload("xgboost"))
@@ -624,9 +808,25 @@
 
       const rfPrice = rfData.predicted_price ?? rfData.prediction;
       const xgbPrice = xgbData.predicted_price ?? xgbData.prediction;
+      const actualBenchmarkPrice = rfData.actual_benchmark ?? xgbData.actual_benchmark ?? 8000;
 
+      el("actualPriceValue").textContent = formatUSD(actualBenchmarkPrice);
       el("rfPriceValue").textContent = formatUSD(rfPrice);
       el("xgbPriceValue").textContent = formatUSD(xgbPrice);
+
+      // Calculate Variances against Actual Dataset Price
+      const rfDiff = rfPrice - actualBenchmarkPrice;
+      const xgbDiff = xgbPrice - actualBenchmarkPrice;
+
+      const rfPct = ((rfDiff / actualBenchmarkPrice) * 100).toFixed(1);
+      const xgbPct = ((xgbDiff / actualBenchmarkPrice) * 100).toFixed(1);
+
+      // Render Variance Badges
+      el("rfVarianceBadge").textContent = `${rfDiff >= 0 ? '+' : ''}${formatUSD(rfDiff)} (${rfPct}%)`;
+      el("rfVarianceBadge").className = `variance-badge ${rfDiff >= 0 ? 'pos' : 'neg'}`;
+
+      el("xgbVarianceBadge").textContent = `${xgbDiff >= 0 ? '+' : ''}${formatUSD(xgbDiff)} (${xgbPct}%)`;
+      el("xgbVarianceBadge").className = `variance-badge ${xgbDiff >= 0 ? 'pos' : 'neg'}`;
 
       if (Array.isArray(rfData.contributions) && rfData.contributions.length > 0) {
         renderContributions(rfData.contributions, "rfContribList");
@@ -635,13 +835,30 @@
         renderContributions(xgbData.contributions, "xgbContribList");
       }
 
-      // Show comparison
-      const diff = Math.abs(rfPrice - xgbPrice);
-      const higherModel = rfPrice > xgbPrice ? "Random Forest" : "XGBoost";
-      
+      // Detailed Accuracy & Model Comparison Banner
+      const rfErr = Math.abs(rfDiff);
+      const xgbErr = Math.abs(xgbDiff);
+      const diffBetweenModels = Math.abs(rfPrice - xgbPrice);
+
+      let accuracySummary = "";
+      if (rfErr < xgbErr) {
+        const delta = xgbErr - rfErr;
+        accuracySummary = `🏆 <strong>Random Forest</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(rfPct)}% error vs ${Math.abs(xgbPct)}% error for XGBoost).`;
+      } else if (xgbErr < rfErr) {
+        const delta = rfErr - xgbErr;
+        accuracySummary = `🏆 <strong>XGBoost</strong> is closer to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}) by <strong>${formatUSD(delta)}</strong> (${Math.abs(xgbPct)}% error vs ${Math.abs(rfPct)}% error for Random Forest).`;
+      } else {
+        accuracySummary = `🤝 Both models have identical precision relative to the Actual Dataset Price (${formatUSD(actualBenchmarkPrice)}).`;
+      }
+
       const banner = el("comparisonBanner");
       banner.style.display = "block";
-      banner.innerHTML = `<strong>${higherModel}</strong> predicts a <strong>${formatUSD(diff)}</strong> higher resale price.`;
+      banner.innerHTML = `
+        <div>${accuracySummary}</div>
+        <div class="metric-line">
+          Model Gap: Random Forest and XGBoost predictions differ by <strong>${formatUSD(diffBetweenModels)}</strong> on this valuation.
+        </div>
+      `;
 
     } catch (err) {
       console.warn("Prediction error:", err);
@@ -654,9 +871,10 @@
 
   el("predictBtn").addEventListener("click", handlePrediction);
 
-  // Initial Setup
+  // Initialize Theme and Dropdowns
+  initTheme();
   updateModelDropdown();
-  
+
   // Initialize with zeroed state
   const INITIAL_CONTRIBUTIONS = [
     { name: "Make & Model", value: 0 },

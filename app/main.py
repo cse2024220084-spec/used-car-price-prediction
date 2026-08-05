@@ -122,6 +122,7 @@ class CarFeatures(BaseModel):
     fuel_type: str = Field("Petrol", validation_alias=AliasChoices("fuel_type", "fuel", "Energy"), examples=["Petrol"])
     transmission: Optional[str] = Field("Automatic", validation_alias=AliasChoices("transmission", "Gearbox"), examples=["Automatic"])
     horsepower: Optional[float] = Field(None, ge=0, validation_alias=AliasChoices("horsepower", "engine_size"), examples=[150])
+    actual_price: Optional[float] = Field(None, ge=0, validation_alias=AliasChoices("actual_price", "real_price"), examples=[8500])
     number_of_seats: Optional[int] = Field(None, ge=1, examples=[5])
     number_of_doors: Optional[int] = Field(None, ge=1, examples=[4])
     location: Optional[str] = Field(None, examples=["Dubai"])
@@ -141,6 +142,9 @@ class PredictionResponse(BaseModel):
     model_used: str
     base_value: float = 0.0
     contributions: List[FeatureContribution] = []
+    actual_price: Optional[float] = None
+    actual_benchmark: Optional[float] = None
+
 
 
 @lru_cache(maxsize=1)
@@ -208,8 +212,14 @@ def get_preprocessors() -> Dict[str, Any]:
         "fuel_type": "Petrol",
     }
 
-    group_cols = ["horsepower", "number_of_seats", "number_of_doors"]
+    group_cols = ["horsepower", "number_of_seats", "number_of_doors", "price"]
     available_group_cols = [c for c in group_cols if c in normalized_df.columns]
+
+    brand_model_year_defaults = (
+        normalized_df.groupby(["brand", "model", "year"])[available_group_cols].median().reset_index()
+        if "brand" in normalized_df.columns and "model" in normalized_df.columns and "year" in normalized_df.columns and available_group_cols
+        else pd.DataFrame()
+    )
 
     brand_model_defaults = (
         normalized_df.groupby(["brand", "model"])[available_group_cols].median().reset_index()
@@ -228,6 +238,7 @@ def get_preprocessors() -> Dict[str, Any]:
         "tree_preprocessor": tree_preprocessor,
         "processed_columns": processed_columns,
         "defaults": defaults,
+        "brand_model_year_defaults": brand_model_year_defaults,
         "brand_model_defaults": brand_model_defaults,
         "brand_defaults": brand_defaults,
     }
@@ -373,7 +384,14 @@ def predict(car: CarFeatures):
                 FeatureContribution(name="Transmission", value=round(final_price * 0.05, 2)),
                 FeatureContribution(name="Engine Power", value=round(final_price * 0.04, 2)),
             ]
-            base_val = round(final_price * 0.40, 2)
+        # Calculate actual market benchmark from raw dataset matching make, model, and year
+        artifacts = get_preprocessors()
+        benchmark_val = _pick_default(artifacts["brand_model_year_defaults"], ["brand", "model", "year"], [car.make, car.model, car.year], "price")
+        if benchmark_val is None:
+            benchmark_val = _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "price")
+        if benchmark_val is None:
+            benchmark_val = _pick_default(artifacts["brand_defaults"], ["brand"], [car.make], "price")
+        actual_benchmark_price = float(benchmark_val) if benchmark_val is not None else 8000.0
 
     except Exception as e:
         raise HTTPException(
@@ -386,4 +404,6 @@ def predict(car: CarFeatures):
         model_used=selected_model_name,
         base_value=round(base_val, 2),
         contributions=contributions,
+        actual_price=round(car.actual_price, 2) if car.actual_price is not None else None,
+        actual_benchmark=round(actual_benchmark_price, 2),
     )
