@@ -1,5 +1,4 @@
-# Project Workflow: Used Car Price Prediction Enhancement
-
+# 🚗⚡ AutoValuate AI: Used Car Price Prediction Workflow
 This document outlines the complete, step-by-step technical workflow used to enhance the **Used Car Price Prediction** project. 
 
 The goal of this enhancement was to train and compare two separate machine learning models (**Random Forest** and **XGBoost**) and integrate them into a modern, highly interactive UI that explains its predictions using SHAP values.
