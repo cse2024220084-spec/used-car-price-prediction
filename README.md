@@ -2,7 +2,28 @@
 
 This document outlines the complete, step-by-step technical workflow used to enhance the **Used Car Price Prediction** project. 
 
-The goal of this enhancement was to train and compare two separate machine learning models (Random Forest and XGBoost) and integrate them into a modern, highly interactive UI that explains its predictions using SHAP values.
+The goal of this enhancement was to train and compare two separate machine learning models (**Random Forest** and **XGBoost**) and integrate them into a modern, highly interactive UI that explains its predictions using SHAP values.
+
+### Why Compare Two Separate Machine Learning Models?
+
+Comparing multiple algorithm architectures is a standard best practice in machine learning for several key reasons:
+
+1. **Benchmarking Performance & Accuracy**: No single algorithm guarantees optimal performance across all datasets (*"No Free Lunch" Theorem*). Evaluating Random Forest against XGBoost allows us to compare regression metrics (MAE, RMSE, $R^2$) to identify which model better captures used car valuation dynamics.
+2. **Evaluating Model Stability vs. High Precision**:
+   - **Random Forest** generates stable, conservative price estimates that resist overfitting and ignore noisy data.
+   - **XGBoost** captures intricate non-linear relationships (e.g., steep depreciation curves for modern luxury/EV models), providing higher precision.
+3. **Consensus & Decision Confidence**: Displaying predictions from both models simultaneously in the UI gives users greater confidence when both independent algorithms converge on a similar price range.
+
+### Key Differences Between Random Forest and XGBoost
+
+| Comparison Feature | **Random Forest Regressor** | **XGBoost Regressor** |
+| :--- | :--- | :--- |
+| **Ensemble Strategy** | **Bagging** (Bootstrap Aggregating): Trains multiple decision trees independently in parallel on bootstrap subsets of data. | **Gradient Boosting**: Trains decision trees sequentially, where each new tree explicitly targets and corrects the residual errors of prior trees. |
+| **Tree Construction** | Parallel and independent. Trees do not communicate or learn from each other. | Sequential and dependent. Each tree minimizes loss via gradient descent on residual errors. |
+| **Prediction Combination** | Takes the unweighted average (mean) of all individual decision tree outputs. | Calculates a weighted sum of all trees scaled by a learning rate parameter ($\eta$). |
+| **Variance & Bias Focus** | Primary goal is to **reduce variance** and prevent overfitting of deep decision trees. | Reduces both **bias and variance** simultaneously through iterative gradient optimization. |
+| **Overfitting & Noise Sensitivity** | Highly resistant to overfitting; adding more trees does not cause overfitting. | Higher risk of overfitting if hyper-parameters (learning rate, depth, regularization) are untuned. |
+| **Regularization** | Relies on structural tree limits (`max_depth`, `min_samples_split`). | Includes built-in **L1 ($\alpha$) and L2 ($\lambda$) regularization** to penalize complex trees. |
 
 ---
 
@@ -61,26 +82,72 @@ The goal of this enhancement was to train and compare two separate machine learn
 
 ---
 
-## Quick Start Guide
+## Quick Start Guide & Backend Flow
 
-To run this project locally, follow these steps in your terminal:
+Follow this complete step-by-step flow from repository setup to running the backend server and accessing the application:
 
-1. **Activate the Virtual Environment**:
-   ```bash
-   venv/Scripts/activate
-   ```
-2. **Start the FastAPI Server**:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-3. **Access the Application In Local**:
-   Open your browser and navigate to: `http://127.0.0.1:8000/app/static/index.html`
-4. **Live Demo:** <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">Click Me🚀</a>
+### Step 1: Clone the Repository
+Clone the project repository to your local machine and navigate into the project root directory:
+```bash
+git clone https://github.com/cse2024220084-spec/used-car-price-prediction.git
+cd used-car-price-prediction
+```
+
+### Step 2: Create a Python Virtual Environment
+Create an isolated Python virtual environment to manage project packages:
+```bash
+python -m venv venv
+```
+
+### Step 3: Activate the Virtual Environment
+Activate the virtual environment depending on your operating system:
+- **Windows (CMD / PowerShell)**:
+  ```cmd
+  venv\Scripts\activate
+  ```
+- **Linux / macOS (Bash / Zsh)**:
+  ```bash
+  source venv/bin/activate
+  ```
+
+### Step 4: Install All Dependencies (Automated Script or Manual)
+Instead of installing Python packages manually one by one, use one of the automated setup scripts to install all dependencies from `requirements.txt` in a single step:
+
+- **Option A: Automated Script (Recommended)**
+  - **Windows**: Run `setup.bat` in CMD / PowerShell:
+    ```cmd
+    setup.bat
+    ```
+  - **Linux / macOS / Git Bash**: Run `setup.sh`:
+    ```bash
+    bash setup.sh
+    ```
+  - **Cross-Platform Python Script**: Run `install_dependencies.py`:
+    ```bash
+    python install_dependencies.py
+    ```
+
+- **Option B: Manual Installation via pip**
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+### Step 5: (Optional) Retrain Machine Learning Models
+Pre-trained models (`random_forest.joblib` and `xgboost.joblib`) are already included in the `models/` directory. If you wish to retrain the models from the raw dataset (`data/raw/used_car_sales.csv`), run:
+```bash
+python src/train.py
+```
+
+### Step 6: Start the Backend FastAPI Server
+Launch the Uvicorn ASGI server to expose the backend API:
+```bash
+uvicorn app.main:app --reload
+```
+
+### Step 7: Access the Application & API Documentation
+Open your web browser to access:
+- **Frontend UI Application**: [http://127.0.0.1:8000/app/static/index.html](http://127.0.0.1:8000/app/static/index.html)
+- **Backend API Interactive Docs (Swagger UI)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Live Demo**: <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">Click Me🚀</a>
 
 ---
-
-## Future Enhancement Opportunities
-
-- **Cloud Deployment**: Containerize the application using Docker and deploy to a cloud provider (e.g., AWS, Render, Heroku) to make the API publicly accessible.
-- **Database Integration**: Connect a PostgreSQL or SQLite database to record user prediction requests and monitor model accuracy over time.
-- **Expanded Dataset**: Acquire more recent car sales data (2024-2025) to further improve model accuracy and support modern EV (Electric Vehicle) brands like Tesla or Rivian.
