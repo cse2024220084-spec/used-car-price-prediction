@@ -60,25 +60,18 @@ def preprocess_data(df, test_size=0.2, random_state=42):
     df = df.dropna(subset=["price"])
 
     # --------------------------
-    # Features
+    # Features (6 user-selectable features only)
     # --------------------------
     numerical_features = [
         "year",
-        "mileage",
-        "horsepower",
-        "number_of_seats",
-        "number_of_doors"
     ]
 
     categorical_features = [
         "brand",
         "model",
+        "car_type",
         "fuel_type",
         "transmission",
-        "Location",
-        "car_type",
-        "Color",
-        "sale_status"
     ]
 
     numerical_features = [c for c in numerical_features if c in df.columns]

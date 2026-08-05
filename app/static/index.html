@@ -386,7 +386,7 @@
     }
 
     .contrib-name {
-      width: 110px;
+      width: 120px;
       color: var(--text-dim);
       flex-shrink: 0;
     }
@@ -500,6 +500,72 @@
       border-radius: 4px;
       color: var(--teal);
     }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top: 2px solid var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: var(--teal);
+      background: var(--surface-raised);
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    .data-table th, .data-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table th {
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 
@@ -509,7 +575,7 @@
       <div class="header-content">
         <div class="eyebrow">Used Car Price Prediction</div>
         <h1>Resale Price Calculator & Model Comparison</h1>
-        <p>Compare Random Forest vs XGBoost predictions against Actual Market Price returned by the backend.</p>
+        <p>Compare Random Forest vs XGBoost predictions against Actual Market Price from the dataset.</p>
       </div>
       <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
         <span id="themeIcon">☀️</span> <span id="themeLabel">Light Mode</span>
@@ -521,103 +587,62 @@
           <line x1="12" y1="8" x2="12" y2="12" />
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
-        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. The backend will fetch and
-          return the
-          Actual Market Price alongside predictions from both machine learning models.</div>
+        <div>Select vehicle specifications and click <strong>"Predict & Compare"</strong>. All dropdown options are
+          loaded dynamically from the dataset via <code>GET /feature-names</code>. The Actual Market Price is the
+          median of matching records in the dataset.</div>
       </div>
     </header>
 
-    <div class="grid">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('prediction')" id="btn-prediction">Prediction & Compare</button>
+      <button class="tab-btn" onclick="switchTab('dataset')" id="btn-dataset">Dataset View</button>
+    </div>
+
+    <div id="predictionTab" class="tab-content active">
+      <div class="grid">
       <form class="panel" id="predictionForm" onsubmit="event.preventDefault();">
         <div class="panel-label"><span class="dot"></span>Car Specifications</div>
 
+        <!-- Row 1: Make + Model -->
         <div class="field">
           <div class="row-2">
             <div>
-              <label for="make">Make</label>
-              <select id="make">
-                <option value="Toyota">Toyota</option>
-                <option value="Hyundai">Hyundai</option>
-                <option value="Maruti">Maruti</option>
-                <option value="Mahindra">Mahindra</option>
-                <option value="Kia">Kia</option>
-                <option value="Tata">Tata</option>
-                <option value="Renault">Renault</option>
-                <option value="Prazo">Prazo</option>
-              </select>
+              <label for="make">Manufacturer Name</label>
+              <select id="make"><option value="">Loading...</option></select>
             </div>
             <div>
-              <label for="model">Model</label>
-              <select id="model"></select>
+              <label for="model">Car Name</label>
+              <select id="model"><option value="">--</option></select>
             </div>
           </div>
         </div>
 
+        <!-- Row 2: Car Type + Year -->
         <div class="field">
           <div class="row-2">
             <div>
-              <label for="year">Year</label>
-              <select id="year">
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021" selected>2021</option>
-                <option value="2020">2020</option>
-                <option value="2019">2019</option>
-                <option value="2018">2018</option>
-                <option value="2017">2017</option>
-                <option value="2016">2016</option>
-                <option value="2015">2015</option>
-              </select>
+              <label for="carType">Car Type</label>
+              <select id="carType"><option value="">--</option></select>
             </div>
             <div>
-              <label for="mileage">Mileage (KM)</label>
-              <select id="mileage">
-                <option value="10000">10,000 KM</option>
-                <option value="30000">30,000 KM</option>
-                <option value="45000" selected>45,000 KM</option>
-                <option value="60000">60,000 KM</option>
-                <option value="80000">80,000 KM</option>
-                <option value="100000">100,000 KM</option>
-                <option value="150000">150,000 KM</option>
-                <option value="200000">200,000+ KM</option>
-              </select>
+              <label for="year">Manufactured Year</label>
+              <select id="year"><option value="">--</option></select>
             </div>
           </div>
         </div>
 
+        <!-- Row 3: Fuel Type + Transmission -->
         <div class="field">
           <div class="row-2">
             <div>
-              <label for="fuel">Fuel Type</label>
-              <select id="fuel">
-                <option value="Petrol" selected>Petrol</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Hybrid">Hybrid</option>
-                <option value="Electric">Electric</option>
-              </select>
+              <label for="fuel">Fuel Type (Energy)</label>
+              <select id="fuel"><option value="">--</option></select>
             </div>
             <div>
-              <label for="transmission">Transmission</label>
-              <select id="transmission">
-                <option value="Automatic" selected>Automatic</option>
-                <option value="Manual">Manual</option>
-              </select>
+              <label for="transmission">Transmission (Gearbox)</label>
+              <select id="transmission"><option value="">--</option></select>
             </div>
           </div>
-        </div>
-
-        <div class="field">
-          <label for="horsepower">Horsepower</label>
-          <select id="horsepower">
-            <option value="100">100 HP (Compact / Economy)</option>
-            <option value="150" selected>150 HP (Standard Sedan / SUV)</option>
-            <option value="200">200 HP (Mid-size SUV / Premium Sedan)</option>
-            <option value="250">250 HP (V6 / Turbo Sedan)</option>
-            <option value="300">300 HP (Sports / Performance)</option>
-            <option value="350">350 HP (High Performance)</option>
-            <option value="400">400+ HP (Luxury / Supercar)</option>
-          </select>
         </div>
 
         <button type="button" class="predict-btn" id="predictBtn" style="color: #fffbeb;">Predict & Compare</button>
@@ -630,10 +655,10 @@
         <!-- Actual Market Price Ticket -->
         <div class="ticket actual-ticket" id="actualTicket">
           <div class="ticket-top">
-            <div class="price-label"><span>🎯 Actual Market Price (Backend Ground Truth)</span></div>
+            <div class="price-label"><span>🎯 Actual Market Price (Dataset Ground Truth)</span></div>
             <div class="price-header-row">
               <div class="price-value actual" id="actualPriceValue">$0</div>
-              <div class="variance-badge exact" id="actualBadge">Dataset Actual</div>
+              <div class="variance-badge exact" id="actualBadge">Dataset Median</div>
             </div>
           </div>
         </div>
@@ -667,11 +692,10 @@
             <div id="xgbContribList"></div>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- Explanatory Section for Price Discrepancies -->
+    <!-- Explanation Card -->
     <div class="explanation-card">
       <div class="explanation-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2">
@@ -682,28 +706,67 @@
         Why Predictions Differ from the Actual Market Price
       </div>
       <div class="explanation-content">
-        <p><strong>1. Actual Market Price:</strong> Represents the raw median price recorded in historical transaction
-          data for this specific Make, Model, and Manufactured Year returned directly by the backend API.</p>
-        <p><strong>2. Random Forest Model Adjustment (Bagging):</strong> Random Forest constructs 100 parallel decision
-          trees. It averages continuous inputs (e.g., exact mileage wear, horsepower, transmission) to prevent
-          overfitting, resulting in a conservative and stable estimate.</p>
-        <p><strong>3. XGBoost Model Adjustment (Gradient Boosting):</strong> XGBoost sequentially builds decision trees
-          to minimize residual errors. It heavily penalizes wear factors (like high mileage) and rewards premium power
-          options, capturing complex non-linear price drops.</p>
-        <p><strong>4. Summary:</strong> The machine learning models adjust the static historical actual price up or down
-          based on your vehicle's specific combination of mileage, horsepower, transmission, and fuel type.</p>
+        <p><strong>1. Actual Market Price:</strong> The median of all matching records in
+          <code>used_car_sales.csv</code> filtered by all 6 features (Manufacturer, Car Name, Car Type, Year,
+          Fuel Type, Transmission).</p>
+        <p><strong>2. Random Forest (Bagging):</strong> Averages 100 parallel decision trees trained on the same
+          6 features. Produces stable, conservative estimates that closely track the dataset median.</p>
+        <p><strong>3. XGBoost (Gradient Boosting):</strong> Sequentially builds trees to minimize residual errors.
+          Captures subtle non-linear patterns in the feature combinations, sometimes predicting slightly above
+          or below the dataset median.</p>
+        <p><strong>4. Summary:</strong> Both models are trained exclusively on the 6 features you select.
+          Differences arise from how each algorithm weighs feature interactions and handles the distribution of
+          prices within each feature combination.</p>
+      </div>
+    </div>
+    </div> <!-- Close predictionTab -->
+
+    <div id="datasetTab" class="tab-content">
+      <div class="panel">
+        <div class="panel-label"><span class="dot"></span>Dataset Head (First 5 rows)</div>
+        <p style="font-size: 13px; color: var(--text-dim); margin-top: 0; margin-bottom: 16px;">
+          These are the very first 5 rows directly from the <code>used_car_sales.csv</code> dataset. Total rows in dataset: <span id="totalMatchCount" style="color: var(--teal); font-weight: 600;">0</span>.
+        </p>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Manufacturer Name</th>
+                <th>Car Name</th>
+                <th>Manufactured Year</th>
+                <th>Car Type</th>
+                <th>Fuel Type (Energy)</th>
+                <th>Transmission (Gearbox)</th>
+                <th style="color: var(--teal);">Price</th>
+              </tr>
+            </thead>
+            <tbody id="datasetTableBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--text-dim);">Loading dataset...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <div class="footnote">
-      Backend Target: <code>POST /predict</code> · OpenAPI Documentation at <code>/docs</code>
+      Backend: <code>GET /feature-names</code> · <code>POST /predict</code> · OpenAPI at <code>/docs</code>
     </div>
   </div>
 
   <script>
     const el = (id) => document.getElementById(id);
 
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      
+      el('btn-' + tabId).classList.add('active');
+      el(tabId + 'Tab').classList.add('active');
+    }
+
+    // ---------------------------------------------------------------
     // Theme Management
+    // ---------------------------------------------------------------
     function initTheme() {
       const savedTheme = localStorage.getItem("theme") || "dark";
       document.documentElement.setAttribute("data-theme", savedTheme);
@@ -730,67 +793,100 @@
       }
     }
 
-    const API_ENDPOINTS = [
-      window.location.protocol.startsWith("http") ? `${window.location.origin}/predict` : null,
-      "http://127.0.0.1:8000/predict",
-      "http://localhost:8000/predict"
+    // ---------------------------------------------------------------
+    // API Endpoints
+    // ---------------------------------------------------------------
+    const BASE_URLS = [
+      window.location.protocol.startsWith("http") ? window.location.origin : null,
+      "http://127.0.0.1:8000",
+      "http://localhost:8000"
     ].filter(Boolean);
 
-    const BRAND_MODELS = {
-      Toyota: ["Fortuner", "Hilux"],
-      Hyundai: ["Creta", "i20"],
-      Maruti: ["Dzire", "Ertiga", "Swift"],
-      Mahindra: ["Scorpio", "Thar"],
-      Kia: ["Seltos"],
-      Tata: ["Yodha"],
-      Renault: ["Kags"],
-      Prazo: ["Plato"]
-    };
+    function apiUrl(path) {
+      return BASE_URLS.map(base => `${base}${path}`);
+    }
 
-    const HORSEPOWER_LOOKUP = {
-      Toyota: { Fortuner: 200, Hilux: 204 },
-      Hyundai: { Creta: 113, i20: 100 },
-      Maruti: { Dzire: 100, Ertiga: 103, Swift: 100 },
-      Mahindra: { Scorpio: 120, Thar: 130 },
-      Kia: { Seltos: 115 },
-      Tata: { Yodha: 140 },
-      Renault: { Kags: 150 },
-      Prazo: { Plato: 180 }
-    };
+    // ---------------------------------------------------------------
+    // Feature Names Data (loaded from API)
+    // ---------------------------------------------------------------
+    let featureData = null; // cached response from GET /feature-names
 
+    async function loadFeatureNames() {
+      const urls = apiUrl("/feature-names");
+      for (const url of urls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            featureData = await res.json();
+            populateManufacturers();
+            return;
+          }
+        } catch (e) {
+          // try next
+        }
+      }
+      console.error("Failed to load feature names from API.");
+    }
+
+    function populateManufacturers() {
+      const makeSelect = el("make");
+      makeSelect.innerHTML = "";
+      if (!featureData || !featureData.manufacturers) return;
+
+      featureData.manufacturers.forEach((mfr, idx) => {
+        const opt = document.createElement("option");
+        opt.value = mfr.name;
+        opt.textContent = mfr.name;
+        if (idx === 0) opt.selected = true;
+        makeSelect.appendChild(opt);
+      });
+
+      updateSubDropdowns();
+    }
+
+    function updateSubDropdowns() {
+      if (!featureData) return;
+
+      const selectedMake = el("make").value;
+      const mfr = featureData.manufacturers.find(m => m.name === selectedMake);
+      if (!mfr) return;
+
+      // Car Name
+      fillSelect("model", mfr.car_names);
+      // Car Type
+      fillSelect("carType", mfr.car_types);
+      // Year (already sorted descending from API)
+      fillSelect("year", mfr.years.map(String));
+      // Fuel Type
+      fillSelect("fuel", mfr.energy);
+      // Transmission
+      fillSelect("transmission", mfr.gearbox);
+    }
+
+    function fillSelect(id, values) {
+      const select = el(id);
+      const prevValue = select.value;
+      select.innerHTML = "";
+      values.forEach((val, idx) => {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
+      // Try to keep previous selection if it exists in new options
+      if (values.includes(prevValue)) {
+        select.value = prevValue;
+      }
+    }
+
+    el("make").addEventListener("change", updateSubDropdowns);
+
+    // ---------------------------------------------------------------
+    // Utility
+    // ---------------------------------------------------------------
     function formatUSD(n) {
       return "$" + Math.round(n).toLocaleString("en-US");
     }
-
-    function updateModelDropdown() {
-      const make = el("make").value;
-      const modelSelect = el("model");
-      const availableModels = BRAND_MODELS[make] || ["Standard"];
-
-      modelSelect.innerHTML = "";
-      availableModels.forEach(mod => {
-        const opt = document.createElement("option");
-        opt.value = mod;
-        opt.textContent = mod;
-        modelSelect.appendChild(opt);
-      });
-
-      const newModel = availableModels[0];
-      const defaultHp = HORSEPOWER_LOOKUP[make]?.[newModel];
-      if (defaultHp) {
-        el("horsepower").value = defaultHp;
-      }
-    }
-
-    el("make").addEventListener("change", updateModelDropdown);
-    el("model").addEventListener("change", () => {
-      const make = el("make").value;
-      const model = el("model").value;
-      const defaultHp = HORSEPOWER_LOOKUP[make]?.[model];
-      if (defaultHp) {
-        el("horsepower").value = defaultHp;
-      }
-    });
 
     function renderContributions(items, listId) {
       const list = el(listId);
@@ -828,29 +924,26 @@
       banner.className = "status-banner";
     }
 
+    // ---------------------------------------------------------------
+    // Prediction
+    // ---------------------------------------------------------------
     function buildPayload(modelName) {
       return {
         make: el("make").value,
         model: el("model").value,
         year: parseInt(el("year").value, 10),
-        mileage: parseFloat(el("mileage").value) || 0,
+        car_type: el("carType").value,
         fuel_type: el("fuel").value,
         transmission: el("transmission").value,
-        horsepower: parseFloat(el("horsepower").value) || 0,
-        number_of_seats: 5,
-        number_of_doors: 4,
-        location: "Dubai",
-        car_type: "Sedan",
-        color: "White",
-        sale_status: "Used",
         model_name: modelName
       };
     }
 
     async function sendPredictionRequest(payload) {
       let lastError = null;
+      const urls = apiUrl("/predict");
 
-      for (const url of API_ENDPOINTS) {
+      for (const url of urls) {
         try {
           const response = await fetch(url, {
             method: "POST",
@@ -871,23 +964,68 @@
       throw lastError || new Error("Failed to reach prediction backend.");
     }
 
+    async function loadDatasetSamples() {
+      const urls = apiUrl("/dataset-head");
+      
+      let data = null;
+      for (const url of urls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            data = await res.json();
+            break;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      const tbody = el("datasetTableBody");
+      const matchCount = el("totalMatchCount");
+      
+      if (!data || !data.rows || data.rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-dim);">Failed to load dataset rows.</td></tr>';
+        matchCount.textContent = '0';
+        return;
+      }
+      
+      matchCount.textContent = data.total_matches;
+      tbody.innerHTML = '';
+      
+      data.rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.manufacturer}</td>
+          <td>${r.car_name}</td>
+          <td>${r.year}</td>
+          <td>${r.car_type}</td>
+          <td>${r.fuel_type}</td>
+          <td>${r.transmission}</td>
+          <td style="color: var(--teal); font-weight: 600;">${formatUSD(r.price)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     async function handlePrediction() {
       const btn = el("predictBtn");
       const year = parseInt(el("year").value, 10);
 
-      if (isNaN(year) || year < 1990 || year > 2025) {
-        showStatus("Please enter a valid year.", true);
+      if (isNaN(year) || year < 2015 || year > 2024) {
+        showStatus("Please select a valid manufactured year (2015–2024).", true);
         return;
       }
 
       clearStatus();
       btn.disabled = true;
-      btn.textContent = "Calculating...";
+      btn.innerHTML = '<span class="loading-spinner"></span>Calculating...';
       el("comparisonBanner").style.display = "none";
 
       try {
+        const payloadRF = buildPayload("random_forest");
+
         const [rfData, xgbData] = await Promise.all([
-          sendPredictionRequest(buildPayload("random_forest")),
+          sendPredictionRequest(payloadRF),
           sendPredictionRequest(buildPayload("xgboost"))
         ]);
 
@@ -947,7 +1085,7 @@
 
       } catch (err) {
         console.warn("Prediction error:", err);
-        showStatus(`API Unavailable (${err.message}).`, true);
+        showStatus(`API Error: ${err.message}`, true);
       } finally {
         btn.disabled = false;
         btn.textContent = "Predict & Compare";
@@ -956,22 +1094,29 @@
 
     el("predictBtn").addEventListener("click", handlePrediction);
 
-    // Initialize Theme and Dropdowns
+    // ---------------------------------------------------------------
+    // Initialize
+    // ---------------------------------------------------------------
     initTheme();
-    updateModelDropdown();
 
-    // Initialize with zeroed state
+    // Load feature names from API on page load
+    loadFeatureNames();
+
+    // Load first 5 rows of the dataset
+    loadDatasetSamples();
+
+    // Initialize with zeroed contribution bars
     const INITIAL_CONTRIBUTIONS = [
-      { name: "Make & Model", value: 0 },
+      { name: "Manufacturer", value: 0 },
+      { name: "Car Model", value: 0 },
+      { name: "Car Type", value: 0 },
       { name: "Manufactured Year", value: 0 },
-      { name: "Mileage Impact", value: 0 },
       { name: "Fuel Type", value: 0 },
-      { name: "Transmission", value: 0 },
-      { name: "Engine Power", value: 0 }
+      { name: "Transmission", value: 0 }
     ];
     renderContributions(INITIAL_CONTRIBUTIONS, "rfContribList");
     renderContributions(INITIAL_CONTRIBUTIONS, "xgbContribList");
-
   </script>
 </body>
+
 </html>

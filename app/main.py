@@ -37,15 +37,13 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
 
 from src.preprocess import preprocess_data
 
 app = FastAPI(
     title="Used Car Price Prediction API",
     description="Predicts resale price of a used car and returns SHAP contributions.",
-    version="2.0.3",
+    version="3.0.0",
 )
 
 app.add_middleware(
@@ -65,7 +63,6 @@ RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "used_car_sales.csv"
 app.mount("/app/static", StaticFiles(directory=str(BASE_DIR / "app" / "static")), name="static")
 
 DEFAULT_MODEL_NAME = "random_forest"
-TREE_CATEGORICAL_COLUMNS = ["Manufacturer Name", "Car Type", "Energy", "Gearbox"]
 
 _loaded_models: Dict[str, Any] = {}
 _loaded_explainers: Dict[str, Any] = {}
@@ -110,25 +107,21 @@ def get_explainer(model_name: str = "random_forest"):
     return _loaded_explainers[key]
 
 
+# ---------------------------------------------------------------------------
+# Pydantic Models
+# ---------------------------------------------------------------------------
+
 class CarFeatures(BaseModel):
-    """Payload schema for car features with 2015-2024 year constraint."""
+    """Payload schema for car features — 6 features only."""
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     make: str = Field(..., validation_alias=AliasChoices("make", "brand", "Manufacturer Name"), examples=["Toyota"])
-    model: str = Field(..., validation_alias=AliasChoices("model", "Car Name"), examples=["Camry"])
+    model: str = Field(..., validation_alias=AliasChoices("model", "Car Name"), examples=["Fortuner"])
     year: int = Field(..., ge=2015, le=2024, validation_alias=AliasChoices("year", "Manufactured Year"), examples=[2021])
-    mileage: Optional[float] = Field(None, ge=0, validation_alias=AliasChoices("mileage", "Mileage-KM"), examples=[45000])
+    car_type: str = Field(..., validation_alias=AliasChoices("car_type", "Car Type"), examples=["SUV"])
     fuel_type: str = Field("Petrol", validation_alias=AliasChoices("fuel_type", "fuel", "Energy"), examples=["Petrol"])
-    transmission: Optional[str] = Field("Automatic", validation_alias=AliasChoices("transmission", "Gearbox"), examples=["Automatic"])
-    horsepower: Optional[float] = Field(None, ge=0, validation_alias=AliasChoices("horsepower", "engine_size"), examples=[150])
-    actual_price: Optional[float] = Field(None, ge=0, validation_alias=AliasChoices("actual_price", "real_price"), examples=[8500])
-    number_of_seats: Optional[int] = Field(None, ge=1, examples=[5])
-    number_of_doors: Optional[int] = Field(None, ge=1, examples=[4])
-    location: Optional[str] = Field(None, examples=["Dubai"])
-    car_type: Optional[str] = Field(None, examples=["Sedan"])
-    color: Optional[str] = Field(None, examples=["White"])
-    sale_status: Optional[str] = Field(None, examples=["Used"])
+    transmission: str = Field("Automatic", validation_alias=AliasChoices("transmission", "Gearbox"), examples=["Automatic"])
     model_name: Optional[str] = Field("random_forest", validation_alias=AliasChoices("model_name", "selected_model", "model_used"), examples=["random_forest"])
 
 
@@ -142,14 +135,16 @@ class PredictionResponse(BaseModel):
     model_used: str
     base_value: float = 0.0
     contributions: List[FeatureContribution] = []
-    actual_price: Optional[float] = None
     actual_benchmark: Optional[float] = None
 
 
+# ---------------------------------------------------------------------------
+# Preprocessing & Feature Names
+# ---------------------------------------------------------------------------
 
 @lru_cache(maxsize=1)
 def get_preprocessors() -> Dict[str, Any]:
-    """Load, fit, and cache preprocessing pipelines and fallback statistics."""
+    """Load, fit, and cache preprocessing pipelines."""
     if not RAW_DATA_PATH.exists():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -167,138 +162,51 @@ def get_preprocessors() -> Dict[str, Any]:
         processed_train = pd.DataFrame()
         processed_columns = []
 
-    tree_training_frame = processed_train.copy()
-    for col in TREE_CATEGORICAL_COLUMNS:
-        if col not in tree_training_frame.columns:
-            tree_training_frame[col] = "NA"
-
-    tree_preprocessor = ColumnTransformer(
-        transformers=[
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), TREE_CATEGORICAL_COLUMNS)
-        ],
-        remainder="passthrough",
-    )
-
-    if not tree_training_frame.empty:
-        tree_preprocessor.fit(tree_training_frame)
-
-    normalized_df = raw_df.rename(
-        columns={
-            "Price-$": "price",
-            "Manufactured Year": "year",
-            "Mileage-KM": "mileage",
-            "Engine Power-HP": "horsepower",
-            "Manufacturer Name": "brand",
-            "Car Name": "model",
-            "Energy": "fuel_type",
-            "Gearbox": "transmission",
-            "Number of Seats": "number_of_seats",
-            "Number of Doors": "number_of_doors",
-            "Car Type": "car_type",
-            "Car Sale Status": "sale_status",
-        }
-    )
-
-    defaults = {
-        "mileage": float(normalized_df["mileage"].median()) if "mileage" in normalized_df else 45000.0,
-        "horsepower": int(round(normalized_df["horsepower"].median())) if "horsepower" in normalized_df else 150,
-        "number_of_seats": int(round(normalized_df["number_of_seats"].median())) if "number_of_seats" in normalized_df else 5,
-        "number_of_doors": int(round(normalized_df["number_of_doors"].median())) if "number_of_doors" in normalized_df else 4,
-        "Location": str(normalized_df["Location"].mode().iat[0]) if "Location" in normalized_df else "Dubai",
-        "car_type": str(normalized_df["car_type"].mode().iat[0]) if "car_type" in normalized_df else "Sedan",
-        "Color": str(normalized_df["Color"].mode().iat[0]) if "Color" in normalized_df else "Black",
-        "sale_status": str(normalized_df["sale_status"].mode().iat[0]) if "sale_status" in normalized_df else "Used",
-        "transmission": "Automatic",
-        "fuel_type": "Petrol",
-        "price": float(normalized_df["price"].median()) if "price" in normalized_df else 7900.0,
-    }
-
-    group_cols = ["horsepower", "number_of_seats", "number_of_doors", "price"]
-    available_group_cols = [c for c in group_cols if c in normalized_df.columns]
-
-    brand_model_year_defaults = (
-        normalized_df.groupby(["brand", "model", "year"])[available_group_cols].median().reset_index()
-        if "brand" in normalized_df.columns and "model" in normalized_df.columns and "year" in normalized_df.columns and available_group_cols
-        else pd.DataFrame()
-    )
-
-    brand_model_defaults = (
-        normalized_df.groupby(["brand", "model"])[available_group_cols].median().reset_index()
-        if "brand" in normalized_df.columns and "model" in normalized_df.columns and available_group_cols
-        else pd.DataFrame()
-    )
-
-    brand_defaults = (
-        normalized_df.groupby("brand")[available_group_cols].median().reset_index()
-        if "brand" in normalized_df.columns and available_group_cols
-        else pd.DataFrame()
-    )
-
     return {
         "raw_preprocessor": raw_preprocessor,
-        "tree_preprocessor": tree_preprocessor,
         "processed_columns": processed_columns,
-        "defaults": defaults,
-        "brand_model_year_defaults": brand_model_year_defaults,
-        "brand_model_defaults": brand_model_defaults,
-        "brand_defaults": brand_defaults,
     }
 
 
-def _pick_default(frame: pd.DataFrame, filter_columns: List[str], filter_values: List[str], value_column: str) -> Optional[Any]:
-    if frame.empty or value_column not in frame.columns:
-        return None
-    matches = frame.copy()
-    for col, val in zip(filter_columns, filter_values):
-        if col in matches.columns:
-            matches = matches[matches[col].astype(str).str.lower() == str(val).lower()]
-    if not matches.empty:
-        res = matches[value_column].iat[0]
-        return res if pd.notna(res) else None
-    return None
+@lru_cache(maxsize=1)
+def _load_feature_names_data() -> Dict[str, Any]:
+    """Load and cache feature-names lookup from raw dataset."""
+    if not RAW_DATA_PATH.exists():
+        return {"manufacturers": []}
 
+    raw_df = pd.read_csv(RAW_DATA_PATH)
+    manufacturers = []
+
+    for make in sorted(raw_df["Manufacturer Name"].unique()):
+        sub = raw_df[raw_df["Manufacturer Name"] == make]
+        manufacturers.append({
+            "name": make,
+            "car_names": sorted(sub["Car Name"].unique().tolist()),
+            "car_types": sorted(sub["Car Type"].unique().tolist()),
+            "gearbox": sorted(sub["Gearbox"].unique().tolist()),
+            "energy": sorted(sub["Energy"].unique().tolist()),
+            "years": sorted(sub["Manufactured Year"].unique().tolist(), reverse=True),
+        })
+
+    return {"manufacturers": manufacturers}
+
+
+# ---------------------------------------------------------------------------
+# Model Input Builder
+# ---------------------------------------------------------------------------
 
 def _build_model_input(car: CarFeatures) -> np.ndarray:
+    """Build the feature array matching the 6-feature preprocessor."""
     artifacts = get_preprocessors()
-    defaults = artifacts["defaults"]
 
-    hp = car.horsepower or _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "horsepower") or defaults["horsepower"]
-    seats = car.number_of_seats or _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "number_of_seats") or defaults["number_of_seats"]
-    doors = car.number_of_doors or _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "number_of_doors") or defaults["number_of_doors"]
-    mileage_val = car.mileage if car.mileage is not None else defaults["mileage"]
-    transmission_val = car.transmission or defaults["transmission"]
-    fuel_val = car.fuel_type or defaults["fuel_type"]
-
+    # Build a row matching the renamed columns from preprocess_data
     raw_row_data = {
-        # Normalized column names expected by preprocessor
         "brand": car.make,
         "model": car.model,
         "year": car.year,
-        "mileage": float(mileage_val),
-        "fuel_type": fuel_val,
-        "transmission": transmission_val,
-        "horsepower": float(hp),
-        "number_of_seats": int(seats),
-        "number_of_doors": int(doors),
-        "location": car.location or defaults["Location"],
-        "car_type": car.car_type or defaults["car_type"],
-        "color": car.color or defaults["Color"],
-        "sale_status": car.sale_status or defaults["sale_status"],
-
-        # Raw column names for backward compatibility
-        "Manufactured Year": car.year,
-        "Mileage-KM": float(mileage_val),
-        "Engine Power-HP": float(hp),
-        "Number of Seats": int(seats),
-        "Number of Doors": int(doors),
-        "Manufacturer Name": car.make,
-        "Car Name": car.model,
-        "Energy": fuel_val,
-        "Gearbox": transmission_val,
-        "Location": car.location or defaults["Location"],
-        "Car Type": car.car_type or defaults["car_type"],
-        "Color": car.color or defaults["Color"],
-        "Car Sale Status": car.sale_status or defaults["sale_status"],
+        "car_type": car.car_type,
+        "fuel_type": car.fuel_type,
+        "transmission": car.transmission,
     }
 
     raw_row = pd.DataFrame([raw_row_data])
@@ -306,15 +214,57 @@ def _build_model_input(car: CarFeatures) -> np.ndarray:
     if hasattr(raw_features, "toarray"):
         raw_features = raw_features.toarray()
 
-    processed_cols = artifacts["processed_columns"]
-    processed_row = pd.DataFrame(raw_features, columns=processed_cols) if processed_cols and raw_features.shape[1] == len(processed_cols) else pd.DataFrame(raw_features)
-
-    for col in TREE_CATEGORICAL_COLUMNS:
-        if col not in processed_row.columns:
-            processed_row[col] = "NA"
-
     return raw_features
 
+
+# ---------------------------------------------------------------------------
+# Actual Dataset Price Lookup
+# ---------------------------------------------------------------------------
+
+def get_actual_dataset_price(car: CarFeatures) -> float:
+    """Find the median price from the dataset for the exact combination of features."""
+    if not RAW_DATA_PATH.exists():
+        return 7900.0
+
+    raw_df = pd.read_csv(RAW_DATA_PATH)
+
+    # Filter by all 6 features
+    sub = raw_df[
+        (raw_df["Manufacturer Name"].astype(str).str.lower() == str(car.make).lower()) &
+        (raw_df["Car Name"].astype(str).str.lower() == str(car.model).lower()) &
+        (raw_df["Manufactured Year"] == int(car.year)) &
+        (raw_df["Car Type"].astype(str).str.lower() == str(car.car_type).lower()) &
+        (raw_df["Energy"].astype(str).str.lower() == str(car.fuel_type).lower()) &
+        (raw_df["Gearbox"].astype(str).str.lower() == str(car.transmission).lower())
+    ]
+
+    if not sub.empty:
+        return float(sub["Price-$"].median())
+
+    # Fallback: match brand + model + year
+    sub2 = raw_df[
+        (raw_df["Manufacturer Name"].astype(str).str.lower() == str(car.make).lower()) &
+        (raw_df["Car Name"].astype(str).str.lower() == str(car.model).lower()) &
+        (raw_df["Manufactured Year"] == int(car.year))
+    ]
+    if not sub2.empty:
+        return float(sub2["Price-$"].median())
+
+    # Fallback: match brand + model
+    sub3 = raw_df[
+        (raw_df["Manufacturer Name"].astype(str).str.lower() == str(car.make).lower()) &
+        (raw_df["Car Name"].astype(str).str.lower() == str(car.model).lower())
+    ]
+    if not sub3.empty:
+        return float(sub3["Price-$"].median())
+
+    # Final fallback: overall dataset median
+    return float(raw_df["Price-$"].median())
+
+
+# ---------------------------------------------------------------------------
+# API Routes
+# ---------------------------------------------------------------------------
 
 @app.get("/")
 def root():
@@ -324,6 +274,94 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/feature-names")
+def feature_names():
+    """Return unique feature values from the dataset, grouped by Manufacturer Name."""
+    return _load_feature_names_data()
+
+
+@app.get("/dataset-sample")
+def dataset_sample(
+    make: Optional[str] = None,
+    model: Optional[str] = None,
+    year: Optional[int] = None,
+    car_type: Optional[str] = None,
+    fuel_type: Optional[str] = None,
+    transmission: Optional[str] = None,
+):
+    """Return up to 5 matching rows from the raw dataset for comparison."""
+    if not RAW_DATA_PATH.exists():
+        return {"rows": [], "total_matches": 0}
+
+    raw_df = pd.read_csv(RAW_DATA_PATH)
+    sub = raw_df.copy()
+
+    # Progressive filtering — apply each filter if provided
+    filters = [
+        ("Manufacturer Name", make),
+        ("Car Name", model),
+        ("Car Type", car_type),
+        ("Energy", fuel_type),
+        ("Gearbox", transmission),
+    ]
+    for col, val in filters:
+        if val:
+            filtered = sub[sub[col].astype(str).str.lower() == str(val).lower()]
+            if not filtered.empty:
+                sub = filtered
+
+    if year is not None:
+        filtered = sub[sub["Manufactured Year"] == year]
+        if not filtered.empty:
+            sub = filtered
+
+    total_matches = len(sub)
+
+    # Return 5 rows, sampled if more than 5
+    if len(sub) > 5:
+        sample = sub.sample(5, random_state=42)
+    else:
+        sample = sub.head(5)
+
+    rows = []
+    for _, r in sample.iterrows():
+        rows.append({
+            "manufacturer": str(r.get("Manufacturer Name", "")),
+            "car_name": str(r.get("Car Name", "")),
+            "car_type": str(r.get("Car Type", "")),
+            "year": int(r.get("Manufactured Year", 0)),
+            "fuel_type": str(r.get("Energy", "")),
+            "transmission": str(r.get("Gearbox", "")),
+            "price": float(r.get("Price-$", 0)),
+        })
+
+    return {"rows": rows, "total_matches": total_matches}
+
+
+@app.get("/dataset-head")
+def dataset_head():
+    """Return the first 5 rows of the raw dataset standalone."""
+    if not RAW_DATA_PATH.exists():
+        return {"rows": [], "total_matches": 0}
+
+    raw_df = pd.read_csv(RAW_DATA_PATH)
+    sample = raw_df.head(5)
+
+    rows = []
+    for _, r in sample.iterrows():
+        rows.append({
+            "manufacturer": str(r.get("Manufacturer Name", "")),
+            "car_name": str(r.get("Car Name", "")),
+            "car_type": str(r.get("Car Type", "")),
+            "year": int(r.get("Manufactured Year", 0)),
+            "fuel_type": str(r.get("Energy", "")),
+            "transmission": str(r.get("Gearbox", "")),
+            "price": float(r.get("Price-$", 0)),
+        })
+
+    return {"rows": rows, "total_matches": len(raw_df)}
 
 
 @app.post("/predict", response_model=PredictionResponse)
@@ -338,6 +376,15 @@ def predict(car: CarFeatures):
         contributions: List[FeatureContribution] = []
         base_val = 0.0
 
+        feature_names_list = [
+            "Manufacturer",
+            "Car Model",
+            "Car Type",
+            "Manufactured Year",
+            "Fuel Type",
+            "Transmission",
+        ]
+
         explainer = get_explainer(selected_model_name)
         if explainer is not None:
             try:
@@ -350,25 +397,16 @@ def predict(car: CarFeatures):
                 if isinstance(sv, np.ndarray) and sv.ndim > 1:
                     sv = sv[0]
 
-                feature_names = [
-                    "Make & Model",
-                    "Manufactured Year",
-                    "Mileage Impact",
-                    "Fuel Type",
-                    "Transmission",
-                    "Engine Power",
-                ]
-
                 num_features = len(sv)
-                if num_features >= len(feature_names):
-                    chunk_size = max(1, num_features // len(feature_names))
-                    for i, fname in enumerate(feature_names):
+                if num_features >= len(feature_names_list):
+                    chunk_size = max(1, num_features // len(feature_names_list))
+                    for i, fname in enumerate(feature_names_list):
                         start_idx = i * chunk_size
-                        end_idx = (i + 1) * chunk_size if i < len(feature_names) - 1 else num_features
+                        end_idx = (i + 1) * chunk_size if i < len(feature_names_list) - 1 else num_features
                         c_val = float(np.sum(sv[start_idx:end_idx]))
                         contributions.append(FeatureContribution(name=fname, value=round(c_val, 2)))
                 else:
-                    for i, fname in enumerate(feature_names):
+                    for i, fname in enumerate(feature_names_list):
                         c_val = float(sv[i]) if i < num_features else 0.0
                         contributions.append(FeatureContribution(name=fname, value=round(c_val, 2)))
             except Exception as ex:
@@ -378,21 +416,16 @@ def predict(car: CarFeatures):
         # Fallback values if SHAP computation is bypassed
         if not contributions:
             contributions = [
-                FeatureContribution(name="Make & Model", value=round(final_price * 0.35, 2)),
+                FeatureContribution(name="Manufacturer", value=round(final_price * 0.30, 2)),
+                FeatureContribution(name="Car Model", value=round(final_price * 0.25, 2)),
+                FeatureContribution(name="Car Type", value=round(final_price * 0.10, 2)),
                 FeatureContribution(name="Manufactured Year", value=round(final_price * 0.20, 2)),
-                FeatureContribution(name="Mileage Impact", value=round(-final_price * 0.12, 2)),
                 FeatureContribution(name="Fuel Type", value=round(final_price * 0.08, 2)),
-                FeatureContribution(name="Transmission", value=round(final_price * 0.05, 2)),
-                FeatureContribution(name="Engine Power", value=round(final_price * 0.04, 2)),
+                FeatureContribution(name="Transmission", value=round(final_price * 0.07, 2)),
             ]
-        # Calculate actual market benchmark from raw dataset matching make, model, and year
-        artifacts = get_preprocessors()
-        benchmark_val = _pick_default(artifacts["brand_model_year_defaults"], ["brand", "model", "year"], [car.make, car.model, car.year], "price")
-        if benchmark_val is None:
-            benchmark_val = _pick_default(artifacts["brand_model_defaults"], ["brand", "model"], [car.make, car.model], "price")
-        if benchmark_val is None:
-            benchmark_val = _pick_default(artifacts["brand_defaults"], ["brand"], [car.make], "price")
-        actual_benchmark_price = float(benchmark_val) if benchmark_val is not None else float(artifacts["defaults"].get("price", 7900.0))
+
+        # Calculate actual matching price from raw dataset
+        actual_benchmark_price = get_actual_dataset_price(car)
 
     except Exception as e:
         raise HTTPException(
@@ -405,6 +438,5 @@ def predict(car: CarFeatures):
         model_used=selected_model_name,
         base_value=round(base_val, 2),
         contributions=contributions,
-        actual_price=round(car.actual_price, 2) if car.actual_price is not None else None,
         actual_benchmark=round(actual_benchmark_price, 2),
     )
