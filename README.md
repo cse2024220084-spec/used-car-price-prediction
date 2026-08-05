@@ -9,8 +9,8 @@ Comparing multiple algorithm architectures is a standard best practice in machin
 
 1. **Benchmarking Performance & Accuracy**: No single algorithm guarantees optimal performance across all datasets (*"No Free Lunch" Theorem*). Evaluating Random Forest against XGBoost allows us to compare regression metrics (MAE, RMSE, $R^2$) to identify which model better captures used car valuation dynamics.
 2. **Evaluating Model Stability vs. High Precision**:
-   - **Random Forest** generates stable, conservative price estimates that resist overfitting and ignore noisy data.
-   - **XGBoost** captures intricate non-linear relationships (e.g., steep depreciation curves for modern luxury/EV models), providing higher precision.
+   - **Random Forest** builds many trees at the same time and averages them (bagging), which makes it stable and hard to overfit generates stable, conservative price estimates that resist overfitting and ignore noisy data.
+   - **XGBoost** builds trees one after another, with each new tree fixing the errors of the past tree (boosting), captures intricate non-linear relationships (e.g., steep depreciation curves for modern luxury/EV models), providing higher precision.
 3. **Consensus & Decision Confidence**: Displaying predictions from both models simultaneously in the UI gives users greater confidence when both independent algorithms converge on a similar price range.
 
 ### Key Differences Between Random Forest and XGBoost
