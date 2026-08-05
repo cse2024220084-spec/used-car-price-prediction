@@ -90,11 +90,13 @@ function updateThemeButton(theme) {
 // ---------------------------------------------------------------
 // API Endpoints & Utility
 // ---------------------------------------------------------------
-const BASE_URLS = [
+let urls = [
   window.location.protocol.startsWith("http") ? window.location.origin : null,
+  window.location.protocol.startsWith("http") ? `${window.location.protocol}//${window.location.hostname}:8000` : null,
   "http://127.0.0.1:8000",
   "http://localhost:8000"
 ].filter(Boolean);
+const BASE_URLS = [...new Set(urls)];
 
 function apiUrl(path) {
   return BASE_URLS.map(base => `${base}${path}`);
