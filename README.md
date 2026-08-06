@@ -60,7 +60,6 @@ Launch the Uvicorn ASGI server to expose the backend API:
 ```bash
 uvicorn app.main:app --reload
 ```
----
 
 ### Step 7: Access the Application & API Documentation
 Open your web browser to access:
