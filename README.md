@@ -1,7 +1,4 @@
 
-
----
-
 ## Quick Start Guide & Backend Flow
 
 Follow this complete step-by-step flow from repository setup to running the backend server and accessing the application:
@@ -70,6 +67,7 @@ Open your web browser to access:
 - **Frontend UI Application**: [http://127.0.0.1:8000/app/static/index.html](http://127.0.0.1:8000/app/static/index.html)
 - **Backend API Interactive Docs (Swagger UI)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **Live Demo**: <a href="http://18.136.104.232/app/static/index.html" target="_blank" rel="noopener noreferrer">Click Me 🚀</a>
+---
 
 ## 🚗⚡ AutoValuate AI: Used Car Price Prediction Workflow
 This document outlines the complete, step-by-step technical workflow used to enhance the **Used Car Price Prediction** project. 
